@@ -86,7 +86,7 @@ class HybridQubit(object):
         Return the qubit eigenbasis
         """
         evecs = LA.eigh(self.hamiltonian_lab())[1]
-        evecs = qmf.eigvector_phase_sort(evecs)
+        evecs = eigvector_phase_sort(evecs)
         return evecs
 
     def energy_detuning(self, detuning):
@@ -200,12 +200,13 @@ class SOSSHybrid(HybridQubit):
 
     def __init__(self, ed_ratio, matchfreq):
         from scipy.interpolate import interp1d
+        from os.path import join
         self.ed_ratio = ed_ratio
         self.matchfreq = matchfreq
-        ed_ratio_array_ref = np.load('ed_ratio_ref.npy')
-        stsplitting_array_ref = np.load('stsplitting_ref.npy')
-        delta1_array_ref = np.load('delta1_ref.npy')
-        delta2_array_ref = np.load('delta2_ref.npy')
+        ed_ratio_array_ref = np.load(join('initdata', 'ed_ratio_ref.npy'))
+        stsplitting_array_ref = np.load(join('initdata', 'stsplitting_ref.npy'))
+        delta1_array_ref = np.load(join('initdata', 'delta1_ref.npy'))
+        delta2_array_ref = np.load(join('initdata', 'delta2_ref.npy'))
 
         stsplitting_f = interp1d(ed_ratio_array_ref, stsplitting_array_ref)
         delta1_f = interp1d(ed_ratio_array_ref, delta1_array_ref)

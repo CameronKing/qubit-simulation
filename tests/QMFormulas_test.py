@@ -3,7 +3,8 @@
 import pytest
 import numpy as np
 
-import QMFormulas
+from context import qubitsim
+import qubitsim.QMFormulas as QMFormulas
 
 def test_eigvector_phase_sort_test():
     test_matrix = np.array([[-1, -1, 1], [-1, 1, 1], [-1, -1, 1]])

@@ -4,14 +4,5 @@
   "CJFidelities_test.py::test_dimension_chi0": true,
   "CJFidelities_test.py::test_kernel_basic": true,
   "NoiseAveraging_test.py::test_wing_doubling": true,
-  "Resonator_test.py": true,
-  "tests/HybridQubit_test.py::test_derivatives": true,
-  "tests/HybridQubit_test.py::test_eigenbasis_normalization": true,
-  "tests/HybridQubit_test.py::test_qubit_hamiltonian_lab": true,
-  "tests/HybridQubit_test.py::test_qubit_initialization": true,
-  "tests/NoiseAveraging_test.py": true,
-  "tests/Resonator_test.py::test_annihilation_operator": true,
-  "tests/Resonator_test.py::test_commutation_relation_creation_annihilation": true,
-  "tests/Resonator_test.py::test_creation_operator": true,
-  "tests/Resonator_test.py::test_number_operator": true
+  "Resonator_test.py": true
 }

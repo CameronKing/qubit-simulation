@@ -4,9 +4,9 @@
 import math
 import numpy as np
 
-import QMFormulas as qmf
-import qubit.HybridQubit as hybrid
-import CJFidelities as cj
+import qubitsim.QMFormulas as qmf
+import qubitsim.qubit.HybridQubit as hybrid
+import qubitsim.CJFidelities as cj
 
 
 def even_area_sampling(samples, sigma):

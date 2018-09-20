@@ -3,7 +3,9 @@
 import math
 import pytest
 import numpy as np
-from qubitsim.qubit import HybridQubit as hybrid
+
+from context import qubitsim
+import qubitsim.qubit.HybridQubit as hybrid
 
 def test_qubit_initialization():
     """

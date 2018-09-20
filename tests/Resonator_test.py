@@ -4,7 +4,8 @@ import pytest
 import math
 import numpy as np
 
-from qubitsim.resonator import Resonator
+from context import qubitsim
+import qubitsim.resonator as Resonator
 
 def test_number_operator():
     omega = 10.0
