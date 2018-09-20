@@ -4,7 +4,7 @@ import pytest
 import math
 import numpy as np
 
-import CJFidelities as CJ
+from qubitsim import CJFidelities as CJ
 
 
 def test_dimension_chi0():

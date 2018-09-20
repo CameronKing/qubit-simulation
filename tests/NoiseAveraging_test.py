@@ -5,7 +5,7 @@ import math
 import numpy as np
 import os
 
-from qubit-simulation import NoiseAveraging
+from qubitsim import NoiseAveraging
 
 def test_noise_doubling():
     orig = np.arange(0, 11, 2)

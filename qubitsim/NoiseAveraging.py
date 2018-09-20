@@ -5,7 +5,7 @@ import math
 import numpy as np
 
 import QMFormulas as qmf
-import HybridQubit as hybrid
+import qubit.HybridQubit as hybrid
 import CJFidelities as cj
 
 
