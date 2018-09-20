@@ -6,6 +6,11 @@ import scipy.linalg as LA
 
 import QMFormulas as qmf
 
+def eigvector_phase_sort(eig_matrix):
+    for i in range(eig_matrix.shape[1]):
+        if eig_matrix[0, i] < 0:
+            eig_matrix[:, i] *= -1
+    return eig_matrix
 
 def second_order_sweet_spot_match_finder(fit_params_init, operating_point, matchfreq):
     """
