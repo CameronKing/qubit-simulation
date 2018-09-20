@@ -4,8 +4,6 @@ import math
 import numpy as np
 import scipy.linalg as LA
 
-import QMFormulas as qmf
-
 def eigvector_phase_sort(eig_matrix):
     for i in range(eig_matrix.shape[1]):
         if eig_matrix[0, i] < 0:
