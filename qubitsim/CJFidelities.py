@@ -63,7 +63,23 @@ class CJ (object):
                 unitary_operation = LA.expm(-1j * tfinal * mod_interaction)
                 return unitary_operation @ self.chi0 @ unitary_operation.conj().T
 
+
     def fidelity(self, tfinal):
+        """
+        Calculate the process fidelity using
+        F = tr(chi_{ideal} chi_{actual})
+
+        Parameters
+        ----------
+        tfinal : float
+            Time of the simulation
+            Units: ns
+        
+        Returns
+        -------
+        float
+            process fidelity
+        """
         noisy_chi = self.chi_final_RF(tfinal)
         chi_product = noisy_chi @ self.chi0
         return np.trace(chi_product).real
