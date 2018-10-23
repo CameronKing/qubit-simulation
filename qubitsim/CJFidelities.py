@@ -81,5 +81,6 @@ class CJ (object):
             process fidelity
         """
         noisy_chi = self.chi_final_RF(tfinal)
-        chi_product = noisy_chi @ self.chi0
+        noisy_chi = noisy_chi / np.sqrt(np.trace(noisy_chi @ noisy_chi).real)
+        chi_product = noisy_chi @ self.chi0 / np.sqrt(np.trace(self.chi0 @ self.chi0).real)
         return np.trace(chi_product).real
