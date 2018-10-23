@@ -56,3 +56,11 @@ def test_basic_evolution():
                                        [0, 1, 1, 0],
                                        [0, 0, 0, 0]], dtype=complex)
     assert np.array_equal(chi_final_from_class, actual_chi_final)
+
+
+def test_fidelity_normalization():
+    actual_chi = np.array([[0, 0, 0, 1],
+                           [0, 0, 1, 0],
+                           [0, 1, 0, 0],
+                           [1, 0, 0, 0]])
+    assert CJ.fidelity(actual_chi, actual_chi) == 1.0
