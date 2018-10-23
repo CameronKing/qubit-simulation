@@ -81,6 +81,27 @@ class CJ (object):
             process fidelity
         """
         noisy_chi = self.chi_final_RF(tfinal)
-        noisy_chi = noisy_chi / np.sqrt(np.trace(noisy_chi @ noisy_chi).real)
-        chi_product = noisy_chi @ self.chi0 / np.sqrt(np.trace(self.chi0 @ self.chi0).real)
-        return np.trace(chi_product).real
+        return fidelity(self.chi0, noisy_chi)
+
+
+def fidelity(chi_ideal, chi_actual):
+    """
+    Calculate the process fidelity using
+    F = tr(chi_{ideal} chi_{actual})
+
+    Parameters
+    ----------
+    chi_ideal : (n,n) complex array
+        Ideal process matrix
+
+    chi_actual : (n, n) complex array
+        Actual process matrix
+    
+    Returns
+    -------
+    float
+        process fidelity
+    """
+    chi_ideal = chi_ideal / np.sqrt(np.trace(chi_ideal @ chi_ideal).real)
+    chi_actual = chi_ideal / np.sqrt(np.trace(chi_actual @ chi_actual).real)
+    return np.trace(chi_ideal @ chi_actual).real
