@@ -3,6 +3,7 @@
   "tests/CJFidelities_test.py::test_chi0_initiliazation",
   "tests/CJFidelities_test.py::test_kernel_basic",
   "tests/CJFidelities_test.py::test_basic_evolution",
+  "tests/CJFidelities_test.py::test_fidelity_normalization",
   "tests/ChargeDipole_test.py::test_qubit_initialization",
   "tests/ChargeDipole_test.py::test_qubit_hamiltonian_lab",
   "tests/ChargeDipole_test.py::test_eigenbasis_normalization",

@@ -2,6 +2,7 @@
 # the purpose of calculating infidelities using Choi-Jamilkowski
 # matrices
 
+import math
 import numpy as np
 import scipy.linalg as LA
 
@@ -11,7 +12,7 @@ class CJ (object):
     of state evolution. This is equivalent to the chi-matrix
     for the evolution
     """
-    def __init__(self, indices, hamiltonian, noise_hamiltonian, noise_type = 'quasistatic'):
+    def __init__(self, indices, hamiltonian, noise_hamiltonian, noise_type = None):
         """
         Initialize a Choi-Jamilkowski instance with the subspace
         of interest given by indices, and the kernel of the unitary
@@ -102,6 +103,6 @@ def fidelity(chi_ideal, chi_actual):
     float
         process fidelity
     """
-    chi_ideal = chi_ideal / np.sqrt(np.trace(chi_ideal @ chi_ideal).real)
-    chi_actual = chi_ideal / np.sqrt(np.trace(chi_actual @ chi_actual).real)
+    chi_ideal = chi_ideal / math.sqrt(np.trace(chi_ideal @ chi_ideal).real)
+    chi_actual = chi_actual / math.sqrt(np.trace(chi_actual @ chi_actual).real)
     return np.trace(chi_ideal @ chi_actual).real
