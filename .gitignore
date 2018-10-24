@@ -3,7 +3,6 @@
 
 # Ignore analysis Jupyter notebooks
 notebooks
-*.ipynb
 
 # Ignore test caches
 .cache/v/cache/lastfailed
