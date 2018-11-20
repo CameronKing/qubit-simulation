@@ -1,0 +1,148 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.0'
+      jupytext_version: 0.8.5
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+  language_info:
+    codemirror_mode:
+      name: ipython
+      version: 3
+    file_extension: .py
+    mimetype: text/x-python
+    name: python
+    nbconvert_exporter: python
+    pygments_lexer: ipython3
+    version: 3.6.5
+---
+
+# The Quantum Dot Hybrid Qubit
+
+
+The quantum dot hybrid qubit is a qubit encoding that uses 3 electrons across 2 quantum dots. The 3 electrons are initialized in the $S = 1/2$, $S_{z} = 1/2$ spin manifold. Below, we will explore properties of this qubit.
+
+```{python}
+# %autosave 0
+import itertools
+import math
+import numpy as np
+from bokeh.plotting import figure, show
+from bokeh.palettes import d3 as palette
+from bokeh.io import output_notebook
+
+import context
+from qubitsim.qubit import HybridQubit as hybrid
+```
+
+```{python}
+output_notebook()
+```
+
+In the laboratory basis, this qubit has the Hamiltonian
+$$
+H = \begin{pmatrix}
+-\epsilon/2 & 0 & \Delta_{1} \\
+0 & -\epsilon/2 + E_{ST} & -\Delta_{2} \\
+\Delta_{1} & -\Delta_{2} & \epsilon/2
+\end{pmatrix}
+$$
+where $\epsilon$ is the inter-dot energy detuning, $\Delta_{1(2)}$ is the tunnel coupling from the ground state to the 1(2) excited state, and $E_{ST}$ is the singlet-triplet splitting in one of the dots.
+
+Typically, this qubit is operated in the far-detuned regime, $\epsilon > 3.5 E_{ST}$, where careful tuning of the tunnel couplings allows for the qubit dispersion to be nearly parallel.
+
+```{python}
+ed_ratio_array = np.linspace(-6.0, 8.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig = figure(title='Hybrid Qubit Spectrum')
+colors = palette['Category10'][3]
+
+for i, color in zip(range(3), colors):
+    fig.line(ed_ratio_array, qubit_spectrum[:, i], line_width=2, color=color)
+
+fig.xaxis.axis_label = 'ε / E_ST'
+fig.yaxis.axis_label = 'system energies (GHz)'
+show(fig)
+```
+
+We can consider a different set of tunings for the quantum dot hybrid qubit, where the qubit spectrum is at a second-order-sweet-spot with respect to detuning perturbations.
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 8.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+parameter_array = np.zeros((ed_ratio_array.shape[0], 4))
+match_freq = 10.0
+guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.SOSSHybrid(ed_ratio, match_freq, guess)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    parameter_array[i] = [qubit.ed, qubit.stsplitting, qubit.delta1, qubit.delta2]
+    guess = [qubit.delta1, qubit.delta2, qubit.stsplitting]
+    
+fig = figure(title='SOSS Hybrid Qubit Spectrum')
+colors = palette['Category10'][3]
+
+for i, color in zip(range(3), colors):
+    fig.line(ed_ratio_array, qubit_spectrum[:, i], line_width=2, color=color)
+
+fig.xaxis.axis_label = 'ε / E_ST'
+fig.yaxis.axis_label = 'system energies (GHz)'
+show(fig)
+```
+
+```{python}
+fig = figure(title='QDHQ: SOSS Tunnel Coupling Tunings')
+colors = palette['Category10'][3]
+
+fig.line(ed_ratio_array, parameter_array[:,2] / parameter_array[:,1],
+         line_width=2.0, color=colors[0])
+fig.line(ed_ratio_array, parameter_array[:,3] / parameter_array[:,1],
+         line_width=2.0, color=colors[1])
+
+fig.xaxis.axis_label = 'ε / E_ST'
+fig.yaxis.axis_label = 'Tunnel coupling / E_ST'
+show(fig)
+```
+
+```{python}
+fig = figure(title='QDHQ: SOSS E_ST, f_res = {}'.format(match_freq))
+colors = palette['Category10'][3]
+
+fig.line(ed_ratio_array, parameter_array[:,1],
+         line_width=2.0, color=colors[0])
+
+fig.xaxis.axis_label = 'ε / E_ST'
+fig.yaxis.axis_label = 'E_ST (GHz)'
+show(fig)
+```
+
+```{python}
+fig = figure(title='SOSS Hybrid Qubit Spectrum')
+colors = palette['Category10'][3]
+
+fig.line(ed_ratio_array[50:], parameter_array[50:, 2] / parameter_array[50:, 3],
+         line_width=2.0, color=colors[0])
+
+fig.xaxis.axis_label = 'ε / E_ST'
+fig.yaxis.axis_label = 'Delta_1 / Delta_2'
+show(fig)
+```
+
+```{python}
+
+```
