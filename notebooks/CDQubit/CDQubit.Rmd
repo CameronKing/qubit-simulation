@@ -22,6 +22,8 @@ jupyter:
     version: 3.6.5
 ---
 
+# Charge Dipole Qubit
+
 ```{python}
 # %autosave 0
 import math
@@ -31,6 +33,59 @@ import scipy.linalg as LA
 import matplotlib.pyplot as plt
 import context
 from qubitsim.qubit import ChargeDipole as cd
+```
+
+## Qubit spectrum
+
+```{python}
+ed_array = np.linspace(-40.0, 40.0, 501)
+delta = 5.0
+energies = np.zeros((2, len(ed_array)))
+for i, ed in enumerate(ed_array):
+    qubit = cd.ChargeDipole(ed, delta)
+    energies[:, i] = qubit.energies() / (2 * math.pi)
+```
+
+```{python}
+fig, ax = plt.subplots()
+ax.plot(ed_array, energies[0, :])
+ax.plot(ed_array, energies[1, :])
+plt.show()
+```
+
+## Dipolar coupling
+
+```{python}
+def pauli_decomposition(matrix_array):
+    decomp_vector = np.zeros((4, matrix_array.shape[-1]))
+    iden = np.eye(2)
+    sx = np.array([[0, 1], [1, 0]])
+    sy = np.array([[0, -1.j], [1.j, 0]])
+    sz = np.diag([-1, 1])
+    test_matrices = [iden, sx, sy, sz]
+    for i in range(matrix_array.shape[-1]):
+        matrix = matrix_array[:, :, i]
+        for j in range(4):
+            test = test_matrices[j]
+            decomp_vector[j, i] = 0.5 * np.trace(test @ matrix).real
+    return decomp_vector
+```
+
+```{python}
+ed_array = np.linspace(-40.0, 40.0, 501)
+delta = 5.0
+coupling = np.zeros((2, 2, len(ed_array)))
+for i, ed in enumerate(ed_array):
+    qubit = cd.ChargeDipole(ed, delta)
+    coupling[:, :, i] = qubit.dipole_operator_qubit()
+pauli_vector = pauli_decomposition(coupling)
+```
+
+```{python}
+fig, ax = plt.subplots()
+for i in [1, 3]:
+    ax.plot(ed_array, pauli_vector[i])
+plt.show()
 ```
 
 ```{python}
