@@ -34,8 +34,8 @@ class ChargeDipole(object):
 
     def hamiltonian_lab(self):
         """
-        Generate the hamiltonian of the hybrid qubit in the laboratory or 
-        charge basis. 
+        Generate the hamiltonian of the charge dipole qubit in the laboratory
+        or charge basis. 
 
         Parameters
         ----------
@@ -43,8 +43,8 @@ class ChargeDipole(object):
 
         Returns
         -------
-        H0 : (3, 3) float
-            Hybrid qubit hamiltonian in the lab frame
+        H0 : (2, 2) float
+            charge dipole qubit hamiltonian in the lab frame
             Units: rad/ns
         """
         H0 = np.array([[-0.5 * self.ed, self.delta],
@@ -82,7 +82,7 @@ class ChargeDipole(object):
 
         Returns
         -------
-        (3, 3) float array
+        (2, 2) float array
             Matrix whose columns are normalized eigenvectors of the system
         """
         evecs = LA.eigh(self.hamiltonian_lab())[1]
@@ -96,7 +96,7 @@ class ChargeDipole(object):
 
         Returns
         -------
-        (3,) float array
+        (2,) float array
             array of system energies
             Units: rad/ns
         """
@@ -129,7 +129,7 @@ class ChargeDipole(object):
         
         Returns
         -------
-        (3, 3) float array
+        (2, 2) float array
             lab frame detuning perturbation
             Units: rad/ns
         """
@@ -147,7 +147,7 @@ class ChargeDipole(object):
             Units: GHz
         Returns
         -------
-        (3,3) float array
+        (2, 2) float array
             detuning noise matrix in the qubit basis.
             Units: rad/ns
         """
@@ -161,7 +161,7 @@ class ChargeDipole(object):
         
         Returns
         -------
-        (3, 3) float array
+        (2, 2) float array
             dipole operator
             Units: dimensionless
         """
