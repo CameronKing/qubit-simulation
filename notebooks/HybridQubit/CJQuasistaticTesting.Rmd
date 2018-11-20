@@ -1,0 +1,99 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.0'
+      jupytext_version: 0.8.5
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+  language_info:
+    codemirror_mode:
+      name: ipython
+      version: 3
+    file_extension: .py
+    mimetype: text/x-python
+    name: python
+    nbconvert_exporter: python
+    pygments_lexer: ipython3
+    version: 3.6.5
+---
+
+```{python}
+# %autosave 0
+
+import itertools
+import math
+import numpy as np
+from bokeh.plotting import figure, show
+from bokeh.palettes import d3 as palette
+from bokeh.layouts import gridplot
+from bokeh.io import output_notebook
+
+import context
+from qubitsim.qubit import HybridQubit as hybrid
+```
+
+```{python}
+output_notebook()
+```
+
+```{python}
+operating_point, match_freq = 3.0, 10.0
+ref_qubit = hybrid.SOSSHybrid(operating_point, match_freq)
+```
+
+```{python}
+def noise_simulation(qubit, ded, time):
+    """
+    Calculate the process matrix at time with noise ded
+    """
+    import qubitsim.CJFidelities as CJ
+    indices = [0, 1]
+    H0 = np.diag(qubit.energies())
+    noise = qubit.detuning_noise_qubit(ded)
+    process = CJ.CJ(indices, H0, noise, noise_type='quasistatic')
+    return process.chi_final_RF(time)
+
+
+def noise_iteration(qubit, ded_samples, time):
+    cj_array = np.zeros((ded_samples.shape[0], 9, 9), dtype=complex)
+    for i, ded in enumerate(ded_samples):
+        cj_array[i] = noise_simulation(qubit, ded, time)
+    return cj_array
+```
+
+```{python}
+ueV_conversion = 0.241799050402417
+sigma = 1.0 * ueV_conversion
+tfinal = 1e4
+max_noise = 1.0
+noise_samples, dnoise = np.linspace(-max_noise, max_noise, 8193, retstep=True)
+pdf = np.exp(-(noise_samples**2) / (2*sigma**2)) / math.sqrt(2*math.pi*sigma**2)
+cj_array = noise_iteration(ref_qubit, noise_samples, tfinal)
+```
+
+```{python}
+fig_array = []
+
+for i in range(5):
+    for j in range(5):
+        fig = figure(width=200, height=200,
+                     y_range=(np.min((pdf.reshape((-1,)+(1,)*(cj_array.ndim-1))*cj_array).real),
+                              np.max((pdf.reshape((-1,)+(1,)*(cj_array.ndim-1))*cj_array).real)+1e-6),
+                     x_range=(-4*sigma, 4*sigma))
+        fig.line(noise_samples, pdf*np.abs(cj_array[:, i, j]))
+        fig_array.append(fig)
+        
+grid = gridplot(fig_array, ncols=5)
+show(grid)
+```
+
+#### 
+
+```{python}
+
+```
