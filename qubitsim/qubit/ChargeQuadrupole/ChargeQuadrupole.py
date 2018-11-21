@@ -116,7 +116,7 @@ class ChargeQuadrupole(object):
             Units: rad/ns
         """
         energies = LA.eigvalsh(self.hamiltonian_lab())
-        return energies[0, 2, 1]
+        return energies[[0, 2, 1]]
 
 
     def qubit_splitting(self):
