@@ -22,6 +22,8 @@ jupyter:
     version: 3.6.5
 ---
 
+# Charge Quadrupole Qubit
+
 ```{python}
 # %autosave 0
 import math
@@ -31,6 +33,63 @@ import scipy.linalg as LA
 import matplotlib.pyplot as plt
 import context
 from qubitsim.qubit import ChargeQuadrupole as cq
+```
+
+## Qubit Spectrum
+
+```{python}
+eq_array = np.linspace(-40.0, 40.0, 501)
+delta = 5.0 / math.sqrt(2)
+energies = np.zeros((3, len(eq_array)))
+for i, eq in enumerate(eq_array):
+    qubit = cq.IdealCQ(eq, delta)
+    energies[:, i] = qubit.energies() / (2 * math.pi)
+```
+
+```{python}
+fig, ax = plt.subplots()
+ax.plot(eq_array, energies[0, :])
+ax.plot(eq_array, energies[1, :])
+ax.plot(eq_array, energies[2, :])
+plt.show()
+```
+
+## Dipole Operator
+
+```{python}
+def pauli_decomposition(matrix_array):
+    iden = np.diag([1, 1, 0])
+    sx = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]])
+#     sy = np.array([[0, -1.j, 0], [1.j, 0, 0], [0, 0, 0]])
+    sz = np.diag([-1, 1, 0])
+    ll = np.diag([0,0,1])
+    l0 = np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])
+    l1 = np.array([[0, 0, 0], [0, 0, 1], [0, 1, 0]])
+    test_matrices = [iden, sx, sz, ll, l0, l1]
+    decomp_vector = np.zeros((len(test_matrices), matrix_array.shape[-1]))
+    for i in range(matrix_array.shape[-1]):
+        matrix = matrix_array[:, :, i]
+        for j in range(6):
+            test = test_matrices[j]
+            decomp_vector[j, i] = 0.5 * np.trace(test @ matrix).real
+    return decomp_vector
+```
+
+```{python}
+eq_array = np.linspace(-40.0, 40.0, 501)
+delta = 5.0 / math.sqrt(2)
+coupling = np.zeros((3, 3, len(eq_array)))
+for i, eq in enumerate(eq_array):
+    qubit = cq.IdealCQ(eq, delta)
+    coupling[:, :, i] = qubit.dipole_operator_qubit()
+pauli_vector = pauli_decomposition(coupling)
+```
+
+```{python}
+fig, ax = plt.subplots()
+for i in range(len(pauli_vector)):
+    ax.plot(eq_array, pauli_vector[i])
+plt.show()
 ```
 
 ```{python}
