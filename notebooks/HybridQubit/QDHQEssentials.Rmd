@@ -1,0 +1,124 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.0'
+      jupytext_version: 0.8.5
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+  language_info:
+    codemirror_mode:
+      name: ipython
+      version: 3
+    file_extension: .py
+    mimetype: text/x-python
+    name: python
+    nbconvert_exporter: python
+    pygments_lexer: ipython3
+    version: 3.6.5
+---
+
+```{python}
+# %autosave 0
+import itertools
+import math
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+import context
+from qubitsim.qubit import HybridQubit as hybrid
+```
+
+## Spectrum
+
+```{python}
+ed_ratio_array = np.linspace(-4.0, 6.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig, ax = plt.subplots()
+for i in range(3):
+    ax.plot(ed_ratio_array, qubit_spectrum[:, i])
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"energies (GHz)")
+plt.show()
+
+```
+
+## Second-order sweet spot in detuning
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+parameter_array = np.zeros((ed_ratio_array.shape[0], 4))
+match_freq = 10.0
+guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.SOSSHybrid(ed_ratio, match_freq, guess)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    parameter_array[i] = [qubit.ed, qubit.stsplitting, qubit.delta1, qubit.delta2]
+    guess = [qubit.delta1, qubit.delta2, qubit.stsplitting]
+```
+
+```{python}
+fig, ax = plt.subplots()
+ax.plot(ed_ratio_array, parameter_array[:, 2] / parameter_array[:, 1])
+ax.plot(ed_ratio_array, parameter_array[:, 3] / parameter_array[:, 1])
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+plt.show()
+```
+
+```{python}
+fig, ax = plt.subplots()
+ax.plot(ed_ratio_array, parameter_array[:, 1] / 10.0)
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"$E_{ST} / \omega_{res}$")
+plt.show()
+```
+
+## SOSS dipole transition matrix
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+coupling_array = np.zeros((ed_ratio_array.shape[0], 3, 3))
+match_freq = 10.0
+guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.SOSSHybrid(ed_ratio, match_freq, guess)
+    coupling_array[i] = qubit.dipole_operator_qubit()
+    guess = [qubit.delta1, qubit.delta2, qubit.stsplitting]
+```
+
+```{python}
+fig, ax = plt.subplots()
+ax.plot(ed_ratio_array, coupling_array[:, 0, 1])
+ax.plot(ed_ratio_array, coupling_array[:, 0, 0])
+ax.plot(ed_ratio_array, coupling_array[:, 1, 1])
+ax.plot(ed_ratio_array, coupling_array[:, 0, 2])
+ax.plot(ed_ratio_array, coupling_array[:, 1, 2])
+ax.plot(ed_ratio_array, coupling_array[:, 2, 2])
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"$d_{ij}$ (unitless)")
+plt.show()
+```
+
+```{python}
+
+```
