@@ -30,9 +30,28 @@ import math
 import numpy as np
 import scipy.linalg as LA
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import context
 from qubitsim.qubit import ChargeQuadrupole as cq
+```
+
+```{python}
+# Lines
+mpl.rcParams['lines.linewidth'] = 2
+
+# Border Surround
+mpl.rcParams['axes.linewidth'] = 2.0
+
+# Tick marks
+## X-ticks
+mpl.rcParams['xtick.direction'] = 'in'
+mpl.rcParams['xtick.major.size'] = 5.0
+mpl.rcParams['xtick.major.width'] = 2.0
+##Y-tics
+mpl.rcParams['ytick.direction'] = 'in'
+mpl.rcParams['xtick.major.size'] = 5.0
+mpl.rcParams['ytick.major.width'] = 2.0
 ```
 
 ## Qubit Spectrum
@@ -47,11 +66,11 @@ for i, eq in enumerate(eq_array):
 ```
 
 ```{python}
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
 ax.plot(eq_array, energies[0, :])
 ax.plot(eq_array, energies[1, :])
 ax.plot(eq_array, energies[2, :])
-plt.show()
+fig.savefig("CQspectrum.pdf")
 ```
 
 ## Dipole Operator
@@ -86,10 +105,14 @@ pauli_vector = pauli_decomposition(coupling)
 ```
 
 ```{python}
-fig, ax = plt.subplots()
-for i in range(len(pauli_vector)):
-    ax.plot(eq_array, pauli_vector[i])
-plt.show()
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(eq_array, coupling[0, 0, :])
+ax.plot(eq_array, coupling[1, 1, :])
+ax.plot(eq_array, coupling[1, 0, :])
+ax.plot(eq_array, coupling[2, 2, :])
+# ax.plot(eq_array, coupling[0, 2, :])
+# ax.plot(eq_array, coupling[1, 2, :])
+fig.savefig("CQdipole.pdf")
 ```
 
 ```{python}

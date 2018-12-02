@@ -66,10 +66,10 @@ for i, ed in enumerate(ed_array):
 ```
 
 ```{python}
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
 ax.plot(ed_array, energies[0, :])
 ax.plot(ed_array, energies[1, :])
-plt.show()
+fig.savefig("CDspectrum.pdf")
 ```
 
 ## Dipolar coupling
@@ -101,15 +101,23 @@ pauli_vector = pauli_decomposition(coupling)
 ```
 
 ```{python}
-fig, ax = plt.subplots()
-for i in range(4):
-    ax.plot(ed_array, pauli_vector[i])
+fig, ax = plt.subplots(figsize=(7,6))
+for i in range(1, 4, 2):
+    ax.plot(ed_array, abs(pauli_vector[i]))
 plt.show()
 ```
 
 ```{python}
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_array, coupling[0, 0, :])
+ax.plot(ed_array, coupling[1, 1, :])
 ax.plot(ed_array, coupling[0, 1, :])
+# ax.plot(ed_array, coupling[1, 0, :])
+fig.savefig("CDdipole.pdf")
+```
+
+```{python}
+
 ```
 
 ```{python}

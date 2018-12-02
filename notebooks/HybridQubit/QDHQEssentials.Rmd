@@ -34,6 +34,24 @@ import context
 from qubitsim.qubit import HybridQubit as hybrid
 ```
 
+```{python}
+# Lines
+mpl.rcParams['lines.linewidth'] = 2
+
+# Border Surround
+mpl.rcParams['axes.linewidth'] = 2.0
+
+# Tick marks
+## X-ticks
+mpl.rcParams['xtick.direction'] = 'in'
+mpl.rcParams['xtick.major.size'] = 5.0
+mpl.rcParams['xtick.major.width'] = 2.0
+##Y-tics
+mpl.rcParams['ytick.direction'] = 'in'
+mpl.rcParams['xtick.major.size'] = 5.0
+mpl.rcParams['ytick.major.width'] = 2.0
+```
+
 ## Spectrum
 
 ```{python}
@@ -49,12 +67,13 @@ for i, ed in enumerate(ed_ratio_array):
                                delta2_ratio * stsplitting)
     qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
     
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
 for i in range(3):
     ax.plot(ed_ratio_array, qubit_spectrum[:, i])
 
-ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
-ax.set_ylabel(r"energies (GHz)")
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"energies (GHz)")
+fig.savefig("QDHQ_typical_far_detuned_spectrum.pdf")
 plt.show()
 
 ```
@@ -75,21 +94,22 @@ for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
 ```
 
 ```{python}
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
 ax.plot(ed_ratio_array, parameter_array[:, 2] / parameter_array[:, 1])
 ax.plot(ed_ratio_array, parameter_array[:, 3] / parameter_array[:, 1])
 
-ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+fig.savefig("QDHQ_SOSS_tunnelvsEST.pdf")
 plt.show()
 ```
 
 ```{python}
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(7,6))
 ax.plot(ed_ratio_array, parameter_array[:, 1] / 10.0)
 
-ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
-ax.set_ylabel(r"$E_{ST} / \omega_{res}$")
-plt.show()
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"$E_{ST} / \omega_{res}$")
+fig.savefig("QDHQ_estvsOmegares.pdf")
 ```
 
 ## SOSS dipole transition matrix
@@ -106,16 +126,18 @@ for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
 ```
 
 ```{python}
-fig, ax = plt.subplots()
-ax.plot(ed_ratio_array, coupling_array[:, 0, 1])
-ax.plot(ed_ratio_array, coupling_array[:, 0, 0])
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, coupling_array[:, 0, 0], linewidth=4.0)
 ax.plot(ed_ratio_array, coupling_array[:, 1, 1])
+ax.plot(ed_ratio_array, coupling_array[:, 0, 1])
+ax.plot(ed_ratio_array, coupling_array[:, 2, 2])
 ax.plot(ed_ratio_array, coupling_array[:, 0, 2])
 ax.plot(ed_ratio_array, coupling_array[:, 1, 2])
-ax.plot(ed_ratio_array, coupling_array[:, 2, 2])
 
-ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
-ax.set_ylabel(r"$d_{ij}$ (unitless)")
+
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"$d_{ij}$ (unitless)")
+fig.savefig("QDHQ_dipolecoupling.pdf")
 plt.show()
 ```
 
