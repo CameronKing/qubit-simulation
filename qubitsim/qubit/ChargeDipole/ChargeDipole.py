@@ -11,8 +11,8 @@ class ChargeDipole(object):
     """
     def __init__(self, ed, delta):
         """
-        Create an instance of a hybrid qubit. The accessible features 
-        are ed, stsplitting, delta1, delta2, and dim.
+        Create an instance of a charge dipole qubit. The accessible features 
+        are ed, delta, and dim.
 
         Parameters
         ----------
