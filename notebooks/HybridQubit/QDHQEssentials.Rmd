@@ -54,6 +54,12 @@ mpl.rcParams['ytick.major.width'] = 2.0
 
 ## Spectrum
 
+
+### Far-detuned operating Point
+
+
+##### Full Spectrum
+
 ```{python}
 ed_ratio_array = np.linspace(-4.0, 6.0, 801)
 qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
@@ -76,6 +82,159 @@ for i in range(3):
 fig.savefig("QDHQ_typical_far_detuned_spectrum.pdf")
 plt.show()
 
+```
+
+#### Qubit Splitting
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, qubit_spectrum[:, 1] - qubit_spectrum[:, 0])
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"freq (GHz)")
+fig.savefig("QDHQ_typical_far_detuned_freq.pdf")
+plt.show()
+```
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+coupling_array = np.zeros((ed_ratio_array.shape[0], 3, 3))
+derivative_array = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    coupling_array[i] = qubit.dipole_operator_qubit()
+    derivative_array[i] = qubit.splitting_derivative(1)
+    
+fig, ax1 = plt.subplots(figsize=(7,6))
+# renorm_coupling = coupling_array[:, 1, 0] / np.max(np.abs(coupling_array[:, 1, 0]))
+ax1.plot(ed_ratio_array, (50) * np.abs(coupling_array[:, 1, 0]), color='dodgerblue')
+ax1.tick_params('y', colors='dodgerblue')
+ax1.set_xticks([0, 1, 2, 3, 4, 5, 6])
+ax1.set_ylim((-0.5, 20.5))
+ax2 = ax1.twinx()
+ax2.plot(ed_ratio_array, 1.208995 * 1e3 * np.abs(derivative_array) / math.sqrt(2), color='darkorange')
+ax2.tick_params('y', colors='darkorange')
+ax2.set_ylim((-0.5, 20.5))
+# ax.set_ylim((0, 10000))
+# ax2.set_yscale('log')
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"$d_{01}$ (unitless)")
+# fig.savefig("QDHQ_typical_far_detuned_Coupling.pdf")
+fig.savefig("CouplingRateVsDecoherenceRate.pdf")
+plt.show()
+```
+
+```{python}
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+coupling_array = np.zeros((ed_ratio_array.shape[0], 3, 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    coupling_array[i] = qubit.dipole_operator_qubit()
+    
+fig, ax = plt.subplots(figsize=(7,6))
+entangling_time = 0.25 / ((2 * 50e-3) * np.abs(coupling_array[:, 1, 0]))
+renorm_coupling = coupling_array[:, 1, 0] / np.max(np.abs(coupling_array[:, 1, 0]))
+ax.plot(ed_ratio_array, entangling_time)
+# ax.plot(ed_ratio_array, np.abs(renorm_coupling))
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"$t_{\mathrm{entangle}}$ (ns)")
+# fig.savefig("QDHQ_typical_far_detuned_Coupling.pdf")
+plt.show()
+```
+
+#### Far-detuned regime
+
+```{python}
+ed_ratio_array = np.linspace(3.5, 4.5, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig, ax = plt.subplots(figsize=(7,6))
+for i in range(2):
+    ax.plot(ed_ratio_array, qubit_spectrum[:, i])
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"energies (GHz)")
+# fig.savefig("QDHQ_typical_far_detuned_spectrum_far.pdf")
+plt.show()
+
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, qubit_spectrum[:, 1] - qubit_spectrum[:, 0])
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"energies (GHz)")
+ax.set_ylim((9.85, 11.15))
+fig.savefig("QDHQ_FarRegime_FarPoint.pdf")
+plt.show()
+```
+
+#### Near-detuned regime
+
+```{python}
+ed_ratio_array = np.linspace(0.5, 1.5, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+stsplitting = 10.0
+delta1_ratio = 0.7
+delta2_ratio = 0.7
+for i, ed in enumerate(ed_ratio_array):
+    qubit = hybrid.HybridQubit(ed * stsplitting,
+                               stsplitting,
+                               delta1_ratio * stsplitting,
+                               delta2_ratio * stsplitting)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig, ax = plt.subplots(figsize=(7,6))
+for i in range(2):
+    ax.plot(ed_ratio_array, qubit_spectrum[:, i])
+
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"energies (GHz)")
+# fig.savefig("QDHQ_typical_far_detuned_spectrum_near.pdf")
+plt.show()
+
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, qubit_spectrum[:, 1] - qubit_spectrum[:, 0])
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"energies (GHz)")
+ax.set_ylim((9.85, 11.15))
+fig.savefig("QDHQ_FarRegime_NearPoint.pdf")
+plt.show()
 ```
 
 ## Second-order sweet spot in detuning
@@ -112,10 +271,70 @@ ax.plot(ed_ratio_array, parameter_array[:, 1] / 10.0)
 fig.savefig("QDHQ_estvsOmegares.pdf")
 ```
 
+```{python}
+operating_point = 5.5
+# ed_ratio_array = np.linspace(operating_point-0.2, operating_point+0.2, 801)
+ed_ratio_array = np.linspace(0.0, 6.0, 801)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+base_qubit = hybrid.SOSSHybrid(operating_point, 10.0)
+base_splitting = np.diff(base_qubit.energies() / (2*math.pi))[0]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.HybridQubit(base_qubit.stsplitting*ed_ratio,
+                               base_qubit.stsplitting,
+                               base_qubit.delta1,
+                               base_qubit.delta2)
+    qubit_spectrum[i] = qubit.energies() / (2 * math.pi)
+    
+fig, ax = plt.subplots(figsize=(7,6))
+ax.scatter(operating_point, base_splitting, color='darkorange', s=80)
+ax.plot(ed_ratio_array, qubit_spectrum[:, 1] - qubit_spectrum[:, 0])
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"energies (GHz)")
+ax.set_ylim((9.0, 11.0))
+fig.savefig("QDHQ_SOSS_55.pdf")
+plt.show()
+```
+
+```{python}
+match_freq = 10.0
+ed_ratio_array = np.linspace(0.0, 6.0, 201)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+coupling_array = np.zeros((ed_ratio_array.shape[0]))
+guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.SOSSHybrid(ed_ratio, match_freq, guess)
+    coupling_array[i] = qubit.dipole_operator_qubit()[1, 0]
+    guess = [qubit.delta1, qubit.delta2, qubit.stsplitting]
+    
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, np.abs(coupling_array))
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"$d_{10}$ (unitless)")
+plt.show()
+```
+
+```{python}
+match_freq = 10.0
+ed_ratio_array = np.linspace(0.0, 6.0, 201)
+qubit_spectrum = np.zeros((ed_ratio_array.shape[0], 3))
+coupling_array = np.zeros((ed_ratio_array.shape[0]))
+guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
+for i, ed_ratio in reversed(list(enumerate(ed_ratio_array))):
+    qubit = hybrid.SOSSHybrid(ed_ratio, match_freq, guess)
+    coupling_array[i] = qubit.dipole_operator_qubit()[1, 0]
+    guess = [qubit.delta1, qubit.delta2, qubit.stsplitting]
+    
+fig, ax = plt.subplots(figsize=(7,6))
+ax.plot(ed_ratio_array, 0.25 / (2 * 50e-3 * np.abs(coupling_array)))
+ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+ax.set_ylabel(r"$t_{\mathrm{entangle}}$ (ns)")
+plt.show()
+```
+
 ## SOSS dipole transition matrix
 
 ```{python}
-ed_ratio_array = np.linspace(0.0, 6.0, 801)
+ed_ratio_array = np.linspace(0.0, 4.0, 801)
 coupling_array = np.zeros((ed_ratio_array.shape[0], 3, 3))
 match_freq = 10.0
 guess = [0.7 * match_freq, 0.7*match_freq, match_freq]
@@ -138,6 +357,87 @@ ax.plot(ed_ratio_array, coupling_array[:, 1, 2])
 # ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
 # ax.set_ylabel(r"$d_{ij}$ (unitless)")
 fig.savefig("QDHQ_dipolecoupling.pdf")
+plt.show()
+```
+
+```{python}
+fig, ax1 = plt.subplots(figsize=(7,6))
+# ax.plot(ed_ratio_array, coupling_array[:, 0, 0], linewidth=4.0)
+# ax.plot(ed_ratio_array, coupling_array[:, 1, 1])
+ax1.plot(ed_ratio_array, np.abs(2.0 * coupling_array[:, 0, 1]), color='dodgerblue')
+ax1.tick_params('y', colors='b')
+ax2 = ax1.twinx()
+ax2.plot(ed_ratio_array,np.reciprocal(0.25*np.abs(2.0 * coupling_array[:, 0, 1])),
+         color='darkorange')
+ax2.tick_params('y', colors='darkorange')
+ax2.set_ylim((-5, 155))
+ax2.set_yticks([0, 25, 50, 75, 100, 125, 150])
+# ax.plot(ed_ratio_array, coupling_array[:, 2, 2])
+# ax.plot(ed_ratio_array, coupling_array[:, 0, 2])
+# ax.plot(ed_ratio_array, coupling_array[:, 1, 2])
+
+
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"$d_{ij}$ (unitless)")
+# fig.savefig("QDHQ_dipolecoupling.pdf")
+fig.savefig("couplingvsentalingtime.pdf")
+```
+
+```{python}
+fig, ax1 = plt.subplots(figsize=(7,6))
+ax1.plot(ed_ratio_array,np.reciprocal(2 * np.abs((50e-3) * coupling_array[:, 0, 1])),
+         color='forestgreen')
+# ax2.tick_params('y', colors='darkorange')
+ax1.set_ylim((-5, 355))
+# ax1.set_yticks([0, 20, 40, 60, 80])
+ax1.set_xticks([0, 1, 2, 3, 4])
+ax1.yaxis.tick_right()
+
+# ax.set_xlabel(r"$\epsilon / E_{ST}$ (unitless)")
+# ax.set_ylabel(r"$d_{ij}$ (unitless)")
+# fig.savefig("QDHQ_dipolecoupling.pdf")
+fig.savefig("entanglingTime.pdf")
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(8,2))
+sigma = 0.5
+x = np.linspace(0, 1.0, 1000)
+samples = 5
+window = 0.35
+fres_array = np.linspace(10.0-window, 10.0+window, samples)
+gaussian = np.exp(-np.power((fres_array - 10.0), 2) / (math.sqrt(2) * sigma**2)) / math.sqrt(math.pi * sigma**2)
+fres = 10.0
+running_sum = np.zeros((len(x)))
+for i in range(samples):
+    running_sum += gaussian[i] * math.pi*(1 + np.cos(2*math.pi*fres_array[i] * x))
+    ax.plot(x, math.pi*(1 + np.cos(2*math.pi*fres_array[i] * x)), color='dodgerblue', linewidth=1)
+running_sum /= np.sum(gaussian)
+ax.set_yticks([])
+ax.set_xticks([])
+ax.plot(x, running_sum, color='darkorange', linewidth=2)
+fig.savefig("large_freq_diff_avg.pdf", bbox_inches='tight')
+plt.show()
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(8,2))
+sigma = 0.5
+x = np.linspace(0, 1.0, 1000)
+samples = 5
+window = 0.06
+fres_array = np.linspace(10.0-window, 10.0+window, samples)
+gaussian = np.exp(-np.power((fres_array - 10.0), 2) / (math.sqrt(2) * sigma**2)) / math.sqrt(math.pi * sigma**2)
+fres = 10.0
+running_sum = np.zeros((len(x)))
+for i in range(samples):
+    running_sum += gaussian[i] * math.pi*(1 + np.cos(2*math.pi*fres_array[i] * x))
+    ax.plot(x, math.pi*(1 + np.cos(2*math.pi*fres_array[i] * x)), color='dodgerblue', linewidth=1)
+running_sum /= np.sum(gaussian)
+ax.set_yticks([])
+ax.set_xticks([])
+# ax.plot(x, running_sum, color='darkorange', linewidth=2)
+fig.savefig("small_freq_diff.pdf", bbox_inches='tight')
 plt.show()
 ```
 
