@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: qubitsim
-Version: 0.1.dev0
-Summary: Qubit simulation tools for effective models
-License: MIT
-Provides-Extra: test
-License-File: LICENSE.txt
