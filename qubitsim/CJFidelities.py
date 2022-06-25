@@ -3,18 +3,26 @@
 # matrices
 
 import math
+from typing import Literal
+
 import numpy as np
 import scipy.linalg as LA
 
 
 class CJ(object):
-    """
-    Return a Choi-Jamilkowski matrix after a given amount
-    of state evolution. This is equivalent to the chi-matrix
-    for the evolution
+    """Return a Choi-Jamilkowski matrix after a given amount
+    of state evolution.
+
+    This is equivalent to the chi-matrix for the evolution
     """
 
-    def __init__(self, indices, hamiltonian, noise_hamiltonian, noise_type=None):
+    def __init__(
+        self,
+        indices: np.ndarray,
+        hamiltonian: np.ndarray,
+        noise_hamiltonian: np.ndarray,
+        noise_type: Literal["quasistatic", None] = None,
+    ):
         """
         Initialize a Choi-Jamilkowski instance with the subspace
         of interest given by indices, and the kernel of the unitary
@@ -40,19 +48,16 @@ class CJ(object):
         self.noise = np.kron(np.identity(dim), noise_hamiltonian)
         self.rot_basis = np.kron(np.identity(dim), hamiltonian)
 
-    def chi_final(self, tfinal):
-        """
-        Using the kernel given in initialition, find the final chi_matrix
-        """
+    def chi_final(self, tfinal: float) -> np.ndarray:
+        """Using the kernel given in initialition, find the final chi_matrix"""
         if tfinal == 0.0:
             return self.chi0
         else:
             unitary = LA.expm(-1j * tfinal * (self.kernel + self.noise))
             return unitary @ self.chi0 @ unitary.conj().T
 
-    def chi_final_RF(self, tfinal):
-        """
-        Find the chi_matrix in the rotating frame defined by the deliberate
+    def chi_final_RF(self, tfinal: float) -> np.ndarray:
+        """Find the chi_matrix in the rotating frame defined by the deliberate
         rotation
         """
         if tfinal == 0.0:
@@ -72,14 +77,14 @@ class CJ(object):
                 unitary_operation = LA.expm(-1j * tfinal * mod_interaction)
                 return unitary_operation @ self.chi0 @ unitary_operation.conj().T
 
-    def fidelity(self, tfinal):
-        """
-        Calculate the process fidelity using
-        F = tr(chi_{ideal} chi_{actual})
+    def fidelity(self, tfinal: float) -> float:
+        """Calculate the process fidelity.
+
+        Uses: F = tr(chi_{ideal} chi_{actual})
 
         Parameters
         ----------
-        tfinal : float
+        tfinal
             Time of the simulation
             Units: ns
 
@@ -92,17 +97,17 @@ class CJ(object):
         return fidelity(self.chi0, noisy_chi)
 
 
-def fidelity(chi_ideal, chi_actual):
-    """
-    Calculate the process fidelity using
-    F = tr(chi_{ideal} chi_{actual})
+def fidelity(chi_ideal: np.ndarray, chi_actual: np.ndarray) -> float:
+    """Calculate the process fidelity.
+
+    Uses: F = tr(chi_{ideal} chi_{actual})
 
     Parameters
     ----------
-    chi_ideal : (n,n) complex array
+    chi_ideal : (n,n) array
         Ideal process matrix
 
-    chi_actual : (n, n) complex array
+    chi_actual : (n, n) array
         Actual process matrix
 
     Returns

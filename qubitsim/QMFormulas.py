@@ -3,10 +3,9 @@
 # Cameron King
 # University of Wisconsin, Madison
 
-import math
+from typing import Literal
 
 import numpy as np
-import scipy.linalg as LA
 
 
 def eigvector_phase_sort(eig_matrix):
@@ -16,7 +15,7 @@ def eigvector_phase_sort(eig_matrix):
     return eig_matrix
 
 
-def gaussian(x, mean, sigma):
+def gaussian(x: np.ndarray, mean: float, sigma: float) -> np.ndarray:
     """Return the value of a normalized gaussian probability distribution
     with mean mu, standard deviation sigma, at the value x"""
     return np.exp(-np.square(x - mean) / (2 * np.square(sigma))) / (
@@ -24,50 +23,48 @@ def gaussian(x, mean, sigma):
     )
 
 
-def basischange(rho0, U):
+def basischange(rho0: np.ndarray, U: np.ndarray) -> np.ndarray:
     """Perform a matrix transformation into the
     basis defined by U. Can also be used for unitary
     transformation of a density matrix rho0"""
     return U @ rho0 @ U.conj().T
 
 
-def processFidelity(chiIdeal, chiActual):
+def processFidelity(chiIdeal: np.ndarray, chiActual: np.ndarray) -> float:
     """Calculate the process fidelity between
     two process matrices chiIdeal and chiActual.
     chiIdeal and chiActual are not assumed to be unitary
     processes"""
     trace1 = np.real(np.trace(chiIdeal @ chiActual))
-    # trace2 = np.sqrt(np.real(np.trace(chiIdeal @ chiIdeal)))
-    # trace3 = np.sqrt(np.real(np.trace(chiActual @ chiActual)))
     return trace1
 
 
-def processInfidelity(chiIdeal, chiActual):
+def processInfidelity(chiIdeal: np.ndarray, chiActual: np.ndarray) -> float:
     """Calculate the process infidelity between two
     matrices chiIdeal and chiActual. chiIdeal and
     chiActual are not assumed to be unitary processes."""
     return 1 - processFidelity(chiIdeal, chiActual)
 
 
-def processInfidelityUnitary(chiIdeal, chiActual):
+def processInfidelityUnitary(chiIdeal: np.ndarray, chiActual: np.ndarray) -> float:
     """Calculate the process fidelity assuming
     unitary processes"""
     return 1 - np.real(np.trace(chiIdeal @ chiActual))
 
 
-def commutator(A, B):
+def commutator(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     """Return the commutator between two equivalently dimensioned
     matrices A and B"""
     return A @ B - B @ A
 
 
-def anticommutator(A, B):
+def anticommutator(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     """Return the anti-commutator between two equivalently dimensioned
     matrices A and B"""
     return A @ B + B @ A
 
 
-def frobenius_inner(A, B):
+def frobenius_inner(A: np.ndarray, B: np.ndarray) -> float:
     """Return the Frobenius norm between two equivalently dimensioned
     matrices A and B"""
     test1 = np.sqrt(np.abs(np.trace(np.dot(A.conj().T, A.T))))
@@ -76,11 +73,9 @@ def frobenius_inner(A, B):
     return np.sqrt(test3 / (test1 * test2))
 
 
-def derivative(func, test_point, order):
+def derivative(func, test_point, order: Literal[0, 1, 2, 3]) -> float:
     h = 0.1
     h = 1e-10
-    # test_array = test_point + np.arange(-4*h, 5*h, h)
-    # test_array = test_point + np.arange(-2*h, 3*h, h)
     if order == 0:
         return func(test_point)
     elif order == 1:
@@ -99,7 +94,6 @@ def derivative(func, test_point, order):
                 -1.0 / 280.0,
             ]
         )
-        # coeff_array = np.array([1.0/12.0, -2.0/3.0, 0.0, 2.0/3.0, -1.0/12.0])
         return np.dot(coeff_array, eval_array) / h
     elif order == 2:
         test_array = test_point + np.arange(-4 * h, 5 * h, h)
@@ -117,11 +111,9 @@ def derivative(func, test_point, order):
                 -1.0 / 560.0,
             ]
         )
-        # coeff_array = np.array([-1.0/12.0, 4.0/3.0, -2.5, 4.0/3.0, -1.0/12.0])
         return np.dot(coeff_array, eval_array) / h**2
     elif order == 3:
-        # coeff_array = np.array([-7.0/240.0, 0.3, -169.0/120.0, 61.0/30.0, 0, -61.0/30.0, 169.0/120.0, -0.3, 7.0/240.0])
         coeff_array = np.array([-0.5, 1.0, 0.0, -1.0, 0.5])
         return np.dot(coeff_array, eval_array) / h**3
     else:
-        return "Error in order parameter"
+        raise ValueError("Error in order parameter")
