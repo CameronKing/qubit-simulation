@@ -1,10 +1,10 @@
 # Test functions for QMFormulas.py
 
-import pytest
+from math import sqrt
 import numpy as np
 
-from context import qubitsim
 import qubitsim.QMFormulas as QMFormulas
+
 
 def test_eigvector_phase_sort_test():
     test_matrix = np.array([[-1, -1, 1], [-1, 1, 1], [-1, -1, 1]])
@@ -28,7 +28,6 @@ def test_gaussian_mean_sd_testing():
 
 
 def test_basis_change_real():
-    from math import sqrt
     input_matrix = np.array([[1, 0], [0, -1]], dtype=complex)
     rot_matrix = np.array([[1, -1], [1, 1]], dtype=complex) / sqrt(2)
     output_matrix = QMFormulas.basischange(input_matrix, rot_matrix)
@@ -38,7 +37,7 @@ def test_basis_change_real():
 
 def test_basis_change_imag():
     input_matrix = np.array([[0, 1], [1, 0]], dtype=complex)
-    rot_matrix = np.array([[0, -1.j], [1.j, 0]], dtype=complex)
+    rot_matrix = np.array([[0, -1.0j], [1.0j, 0]], dtype=complex)
     test_output = np.array([[0, -1], [-1, 0]], dtype=complex)
     output_matrix = QMFormulas.basischange(input_matrix, rot_matrix)
     assert np.allclose(test_output, output_matrix, rtol=1e-8, atol=1e-12)
@@ -46,7 +45,8 @@ def test_basis_change_imag():
 
 def test_commutator_pauli():
     pauli_x = np.array([[0, 1], [1, 0]], dtype=complex)
-    pauli_y = np.array([[0, -1.j], [1.j, 0]], dtype=complex)
+    pauli_y = np.array([[0, -1.0j], [1.0j, 0]], dtype=complex)
     pauli_z = np.array([[1, 0], [0, -1]], dtype=complex)
-    assert np.allclose(2.j * pauli_z, QMFormulas.commutator(pauli_x, pauli_y),
-                       rtol=1e-8, atol=1e-12)
+    assert np.allclose(
+        2.0j * pauli_z, QMFormulas.commutator(pauli_x, pauli_y), rtol=1e-8, atol=1e-12
+    )

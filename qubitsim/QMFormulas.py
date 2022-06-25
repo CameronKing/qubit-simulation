@@ -15,23 +15,26 @@ def eigvector_phase_sort(eig_matrix):
             eig_matrix[:, i] *= -1
     return eig_matrix
 
+
 def gaussian(x, mean, sigma):
     """Return the value of a normalized gaussian probability distribution
     with mean mu, standard deviation sigma, at the value x"""
-    return np.exp(-np.square(x-mean)/(2*np.square(sigma))) / (np.sqrt(2*np.pi*sigma**2))
+    return np.exp(-np.square(x - mean) / (2 * np.square(sigma))) / (
+        np.sqrt(2 * np.pi * sigma**2)
+    )
 
 
 def basischange(rho0, U):
-    """Perform a matrix transformation into the 
-    basis defined by U. Can also be used for unitary 
+    """Perform a matrix transformation into the
+    basis defined by U. Can also be used for unitary
     transformation of a density matrix rho0"""
     return U @ rho0 @ U.conj().T
 
 
 def processFidelity(chiIdeal, chiActual):
-    """Calculate the process fidelity between 
-    two process matrices chiIdeal and chiActual. 
-    chiIdeal and chiActual are not assumed to be unitary 
+    """Calculate the process fidelity between
+    two process matrices chiIdeal and chiActual.
+    chiIdeal and chiActual are not assumed to be unitary
     processes"""
     trace1 = np.real(np.trace(chiIdeal @ chiActual))
     # trace2 = np.sqrt(np.real(np.trace(chiIdeal @ chiIdeal)))
@@ -40,20 +43,20 @@ def processFidelity(chiIdeal, chiActual):
 
 
 def processInfidelity(chiIdeal, chiActual):
-    """Calculate the process infidelity between two 
-    matrices chiIdeal and chiActual. chiIdeal and 
+    """Calculate the process infidelity between two
+    matrices chiIdeal and chiActual. chiIdeal and
     chiActual are not assumed to be unitary processes."""
     return 1 - processFidelity(chiIdeal, chiActual)
 
 
 def processInfidelityUnitary(chiIdeal, chiActual):
-    """Calculate the process fidelity assuming 
+    """Calculate the process fidelity assuming
     unitary processes"""
     return 1 - np.real(np.trace(chiIdeal @ chiActual))
 
 
 def commutator(A, B):
-    """Return the commutator between two equivalently dimensioned 
+    """Return the commutator between two equivalently dimensioned
     matrices A and B"""
     return A @ B - B @ A
 
@@ -81,15 +84,39 @@ def derivative(func, test_point, order):
     if order == 0:
         return func(test_point)
     elif order == 1:
-        test_array = test_point + np.arange(-4*h, 5*h, h)
+        test_array = test_point + np.arange(-4 * h, 5 * h, h)
         eval_array = func(test_array)
-        coeff_array = np.array([1.0 / 280.0, -4.0/105.0, 0.2, -0.8, 0.0, 0.8, -0.2, -4.0/105.0, -1.0/280.0])
+        coeff_array = np.array(
+            [
+                1.0 / 280.0,
+                -4.0 / 105.0,
+                0.2,
+                -0.8,
+                0.0,
+                0.8,
+                -0.2,
+                -4.0 / 105.0,
+                -1.0 / 280.0,
+            ]
+        )
         # coeff_array = np.array([1.0/12.0, -2.0/3.0, 0.0, 2.0/3.0, -1.0/12.0])
         return np.dot(coeff_array, eval_array) / h
     elif order == 2:
-        test_array = test_point + np.arange(-4*h, 5*h, h)
+        test_array = test_point + np.arange(-4 * h, 5 * h, h)
         eval_array = func(test_array)
-        coeff_array = np.array([-1.0/560.0, 8.0/315.0, -0.25, 1.6, -205.0/72.0, 1.6, -0.2, 8.0/315.0, -1.0/560.0])
+        coeff_array = np.array(
+            [
+                -1.0 / 560.0,
+                8.0 / 315.0,
+                -0.25,
+                1.6,
+                -205.0 / 72.0,
+                1.6,
+                -0.2,
+                8.0 / 315.0,
+                -1.0 / 560.0,
+            ]
+        )
         # coeff_array = np.array([-1.0/12.0, 4.0/3.0, -2.5, 4.0/3.0, -1.0/12.0])
         return np.dot(coeff_array, eval_array) / h**2
     elif order == 3:

@@ -1,5 +1,5 @@
 # Parallel Noise Computations
-# Uses parallel evalutions based on 
+# Uses parallel evalutions based on
 # each time step.
 # Backbone formed from MPI4PY
 
@@ -16,7 +16,7 @@ sendbuf = None
 samples = 81
 
 if rank == 0:
-    trange = np.linspace(0, 30, size*20, dtype=float)
+    trange = np.linspace(0, 30, size * 20, dtype=float)
     send_trange = trange.reshape((20, size))
 local_trange = np.empty((20), dtype=float)
 local_cj_array = np.empty((9, 9, 20), dtype=complex)
@@ -29,4 +29,4 @@ if rank == 0:
     total_cj_array = np.empty((9, 9, 20, size), dtype=complex)
 
 comm.Gather(local_cj_array, total_cj_array, root=0)
-print(total_cj_array.reshape(9, 9, size*20))
+print(total_cj_array.reshape(9, 9, size * 20))

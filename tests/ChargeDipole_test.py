@@ -1,11 +1,10 @@
 # Testing code for the Hybrid Qubit class
 
 import math
-import pytest
 import numpy as np
 
-from context import qubitsim
 import qubitsim.qubit.ChargeDipole as cd
+
 
 def test_qubit_initialization():
     """

@@ -1,4 +1,4 @@
-# Calculating Noise-averaged time evolution 
+# Calculating Noise-averaged time evolution
 # using Choi-Jamiolkowski isomorphisms
 
 import math
@@ -11,7 +11,7 @@ import qubitsim.CJFidelities as cj
 
 def even_area_sampling(nsamples, sigma):
     """
-    Use the percentile point function of the normal distribution 
+    Use the percentile point function of the normal distribution
     to return the sample points that represent equal area subdivisions
     underneath a gaussian distribution with mean=0 and sigma=sigma
 
@@ -21,24 +21,26 @@ def even_area_sampling(nsamples, sigma):
         number of samples to return
     sigma : float
         standard deviation of the distribution
-    
+
     Returns
     -------
     float array
         equal area subdivisions of the normal distribution
     """
     from scipy.stats import norm
+
     samples = norm.ppf(np.linspace(0, 1, nsamples), 0.0, sigma)
     return samples[1:-1]
+
 
 def noise_doubling(original):
     """
     Bisect an original sample given
-    
+
     Parameters
     ----------
     original : float array
-    
+
     Returns
     -------
     float array
@@ -52,13 +54,13 @@ def noise_doubling(original):
 
 
 def two_sigma_doubling(original, sigma):
-    middle = np.nonzero(np.fabs(original) <= 2*sigma)[0]
+    middle = np.nonzero(np.fabs(original) <= 2 * sigma)[0]
     new_size = len(original) + len(middle) - 1
     start = range(0, middle[0])
-    finish = range(middle[-1]+1, len(original))
+    finish = range(middle[-1] + 1, len(original))
     new_start = start
-    new_middle = range(middle[0], middle[0]+2*len(middle)-1)
-    new_finish = range(new_middle[-1]+1, new_size)
+    new_middle = range(middle[0], middle[0] + 2 * len(middle) - 1)
+    new_finish = range(new_middle[-1] + 1, new_size)
     new_samples = noise_doubling(original[middle])[1]
 
     new_array = np.zeros((new_size))
@@ -69,28 +71,28 @@ def two_sigma_doubling(original, sigma):
 
 
 def wing_doubling(original, sigma):
-    middle = np.nonzero(np.fabs(original) <= 2*sigma)[0]
+    middle = np.nonzero(np.fabs(original) <= 2 * sigma)[0]
     start = range(0, middle[0])
-    finish = range(middle[-1]+1, len(original))
+    finish = range(middle[-1] + 1, len(original))
     new_size = len(original) + len(start) + len(finish) - 2
 
     start_double = noise_doubling(original[start])[1]
     finish_double = noise_doubling(original[finish])[1]
 
     new_array = np.zeros((new_size))
-    new_array[0:len(start_double)] += start_double
-    new_array[len(start_double):len(start_double)+len(middle)] += original[middle]
-    new_array[len(start_double)+len(middle):] += finish_double
+    new_array[0 : len(start_double)] += start_double
+    new_array[len(start_double) : len(start_double) + len(middle)] += original[middle]
+    new_array[len(start_double) + len(middle) :] += finish_double
     return new_array
 
 
 def noise_testing(input_params):
-    ed = input_params['ed']
-    stsplitting = input_params['stsplitting']
-    delta1 = input_params['delta1']
-    delta2 = input_params['delta2']
-    tstep = input_params['tstep']
-    noise_samples = input_params['noise_samples']
+    ed = input_params["ed"]
+    stsplitting = input_params["stsplitting"]
+    delta1 = input_params["delta1"]
+    delta2 = input_params["delta2"]
+    tstep = input_params["tstep"]
+    noise_samples = input_params["noise_samples"]
 
     indices = [0, 1]
     qubit = hybrid.HybridQubit(ed, stsplitting, delta1, delta2)
@@ -140,7 +142,7 @@ def noise_iteration(noise_samples, tfinal):
 
 def noise_averaging(x, noise_weights, cj_array):
     """
-    Perform a gaussian weighted average of the given process matrix 
+    Perform a gaussian weighted average of the given process matrix
     array using Simpson's rule
 
     Parameters
@@ -158,6 +160,7 @@ def noise_averaging(x, noise_weights, cj_array):
         average process matrix
     """
     from scipy.integrate import simps
+
     # norm = np.trapz(noise_samples, x=x)
     norm = simps(noise_weights, x)
     # matrix_int = np.trapz(np.multiply(cj_array, noise_samples), x=x)
@@ -167,13 +170,14 @@ def noise_averaging(x, noise_weights, cj_array):
 
 def simple_noise_sampling(tfinal, samples0):
     """
-    This algorithm will start with a coarse noise sample and will progressively 
+    This algorithm will start with a coarse noise sample and will progressively
     refine the sample until convergence is found
     """
     from scipy.linalg import sqrtm
+
     ueV_conversion = 0.241799050402417
     sigma = 5.0 * ueV_conversion
-    noise_samples0 = np.linspace(-5 * sigma, 5*sigma, samples0)
+    noise_samples0 = np.linspace(-5 * sigma, 5 * sigma, samples0)
     noise_weights0 = qmf.gaussian(noise_samples0, 0.0, sigma)
     cj_array0 = noise_iteration(noise_samples0, tfinal)
     average_cj0 = noise_averaging(noise_samples0, noise_weights0, cj_array0)
@@ -188,7 +192,11 @@ def simple_noise_sampling(tfinal, samples0):
         cj_array1[:, :, 1::2] += cj_array1_new
         average_cj1 = noise_averaging(noise_samples1, noise_weights1, cj_array1)
         print(qmf.processInfidelity(average_cj0, average_cj1))
-        converge_value = np.abs(np.trace(sqrtm((average_cj0-average_cj1) @ (average_cj0.T - average_cj1.T))))
+        converge_value = np.abs(
+            np.trace(
+                sqrtm((average_cj0 - average_cj1) @ (average_cj0.T - average_cj1.T))
+            )
+        )
         print(converge_value)
         samples = len(noise_samples0)
         print(samples)
@@ -202,10 +210,11 @@ def simple_noise_sampling(tfinal, samples0):
 
 def even_area_noise_sampling(tfinal, samples0):
     """
-    This algorithm will start with a coarse noise sample and will progressively 
+    This algorithm will start with a coarse noise sample and will progressively
     refine the sample until convergence is found
     """
     from scipy.linalg import sqrtm
+
     print(samples0)
     ueV_conversion = 0.241799050402417
     sigma = 5.0 * ueV_conversion
@@ -216,13 +225,17 @@ def even_area_noise_sampling(tfinal, samples0):
     converge_value = 1.0
 
     while converge_value > 1e-10:
-        noise_samples1 = even_area_sampling(samples0+40, sigma)
+        noise_samples1 = even_area_sampling(samples0 + 40, sigma)
         noise_weights1 = qmf.gaussian(noise_samples1, 0.0, sigma)
         cj_array1 = noise_iteration(noise_samples1, tfinal)
         average_cj1 = noise_averaging(noise_samples1, noise_weights1, cj_array1)
         print(samples0)
         # print(qmf.processInfidelity(static_start_cj0, average_cj1))
-        converge_value = np.abs(np.trace(sqrtm((average_cj0-average_cj1) @ (average_cj0.T - average_cj1.T))))
+        converge_value = np.abs(
+            np.trace(
+                sqrtm((average_cj0 - average_cj1) @ (average_cj0.T - average_cj1.T))
+            )
+        )
         print(converge_value)
         if converge_value > 1e-10:
             samples0 += 40
@@ -236,7 +249,7 @@ def bare_time_evolution():
     cj_time_array = np.zeros((9, 9, tsteps), dtype=complex)
     samples = 21
     for i in range(tsteps):
-        print('Time step: {}'.format(i))
+        print("Time step: {}".format(i))
         cj_average, samples = simple_noise_sampling(trange[i], samples)
         cj_time_array[:, :, i] += cj_average
     return trange, cj_time_array
@@ -244,7 +257,7 @@ def bare_time_evolution():
 
 def choosing_final_time(qubit, sigma):
     """
-    Function to make a guess at the final time required 
+    Function to make a guess at the final time required
     for estimating decoherence
 
     Parameters
@@ -257,32 +270,34 @@ def choosing_final_time(qubit, sigma):
     Returns
     -------
     float
-        estimate of the decoherence time for the qubit based on derivatives 
+        estimate of the decoherence time for the qubit based on derivatives
         of the qubit spectrum w.r.t. detuning.
     """
     planck = 4.135667662e-9
     h = 1e-3
-    coeff_array1 = np.array([1/12, -2/3, 0, 2/3, -1/12])
-    coeff_array2 = np.array([-1/12, 4/3, -5/2, 4/3, -1/12])
-    coeff_array3 = np.array([-1/2, 1, 0, -1, 1/2])
+    coeff_array1 = np.array([1 / 12, -2 / 3, 0, 2 / 3, -1 / 12])
+    coeff_array2 = np.array([-1 / 12, 4 / 3, -5 / 2, 4 / 3, -1 / 12])
+    coeff_array3 = np.array([-1 / 2, 1, 0, -1, 1 / 2])
 
     ed = qubit.ed
     stsplitting = qubit.stsplitting
     delta1 = qubit.delta1
     delta2 = qubit.delta2
 
-    qsm2 = hybrid.HybridQubit(ed - 2*h, stsplitting, delta1, delta2).qubit_splitting()
+    qsm2 = hybrid.HybridQubit(ed - 2 * h, stsplitting, delta1, delta2).qubit_splitting()
     qsm1 = hybrid.HybridQubit(ed - h, stsplitting, delta1, delta2).qubit_splitting()
     qsp1 = hybrid.HybridQubit(ed + h, stsplitting, delta1, delta2).qubit_splitting()
-    qsp2 = hybrid.HybridQubit(ed + 2*h, stsplitting, delta1, delta2).qubit_splitting()
+    qsp2 = hybrid.HybridQubit(ed + 2 * h, stsplitting, delta1, delta2).qubit_splitting()
 
-    sample_array = np.array([qsm2, qsm1, qubit.qubit_splitting(), qsp1, qsp2]) / (2*math.pi)
+    sample_array = np.array([qsm2, qsm1, qubit.qubit_splitting(), qsp1, qsp2]) / (
+        2 * math.pi
+    )
 
     deriv1 = np.abs(np.dot(sample_array, coeff_array1))
     deriv2 = np.abs(np.dot(sample_array, coeff_array2))
     deriv3 = np.abs(np.dot(sample_array, coeff_array3))
 
-    T21 = (deriv1*sigma) / (math.sqrt(2) * planck)
+    T21 = (deriv1 * sigma) / (math.sqrt(2) * planck)
     T22 = (deriv2 * sigma**2) / (math.sqrt(2) * planck**2)
     T23 = (deriv3 * sigma**3) / (math.sqrt(2) * planck**3)
     return np.sum(np.array([T21, T22, T23]))

@@ -1,4 +1,4 @@
-# This contains the scripts for an individual run for decoherence of 
+# This contains the scripts for an individual run for decoherence of
 # the quantum dot hybrid qubit
 
 import math
@@ -17,7 +17,7 @@ def noise_sample(qubit, ded, time):
 
     ChoiSimulation = CJ.CJ(indices, H0, noise)
     if time == 0:
-        return 1.
+        return 1.0
     else:
         return ChoiSimulation.fidelity(time)
 
@@ -35,15 +35,18 @@ def average_fidelity(qubit, time, sigma):
     sigma: float
         standard deviation of quasistatic charge noise
         Units: GHz
-   
+
     Returns
     -------
     weighted_average: ((9, 9)) complex array
         average process matrix under quasi-static noise
     """
     from scipy.stats import norm
-    max_noise = 5.*sigma
-    noise_samples = np.linspace(-max_noise, max_noise, 51) #51 samples is probably overkill
+
+    max_noise = 5.0 * sigma
+    noise_samples = np.linspace(
+        -max_noise, max_noise, 51
+    )  # 51 samples is probably overkill
     weights = norm.pdf(noise_samples, 0.0, sigma)
     noise_dim = noise_samples.shape[0]
     fid_array = np.zeros((noise_dim))
@@ -57,18 +60,18 @@ def average_fidelity(qubit, time, sigma):
 
 
 def choosing_final_time(qubit, sigma):
-    """ Function to make a guess at the final time required 
+    """Function to make a guess at the final time required
     for estimating decoherence"""
 
     deriv1 = np.abs(qubit.splitting_derivative(1))
     deriv2 = np.abs(qubit.splitting_derivative(2))
     deriv3 = np.abs(qubit.splitting_derivative(3))
 
-    Gamma21 = (deriv1*sigma) / (math.sqrt(2))
+    Gamma21 = (deriv1 * sigma) / (math.sqrt(2))
     Gamma22 = (deriv2 * sigma**2) / (math.sqrt(2))
     Gamma23 = (deriv3 * sigma**3) / (math.sqrt(2))
     gamma_final_time = 1.0 / (np.sum(np.array([Gamma21, Gamma22, Gamma23])))
-    
+
     if gamma_final_time > 5e5:
         return 5e5
     else:
@@ -84,17 +87,17 @@ def generate_trange(tmax):
     max_exp = int(math.ceil(math.log10(tmax)))
     max_range = int(max_exp * subdim)
     trange = np.zeros((max_range))
-    for i in range(1, max_exp+1):
-        local_range = np.linspace(10**(i-1), 10**i, 10)
-        trange[subdim*(i-1):subdim*(i)] = local_range
+    for i in range(1, max_exp + 1):
+        local_range = np.linspace(10 ** (i - 1), 10**i, 10)
+        trange[subdim * (i - 1) : subdim * (i)] = local_range
     return trange
 
 
 def run_time_series(local_params):
-    operating_point = local_params['ed_point']
-    delta1_var = local_params['delta1_var']
-    delta2_var = local_params['delta2_var']
-    sigma = local_params['sigma']
+    operating_point = local_params["ed_point"]
+    delta1_var = local_params["delta1_var"]
+    delta2_var = local_params["delta2_var"]
+    sigma = local_params["sigma"]
 
     qubit = hybrid.SOSSHybrid(operating_point, 10.0)
     ed = qubit.ed
@@ -102,13 +105,14 @@ def run_time_series(local_params):
     delta1 = qubit.delta1
     delta2 = qubit.delta2
 
-    qubit = hybrid.HybridQubit(ed,
-                               stsplitting,
-                               delta1_var * delta1,
-                               delta2_var * delta2)
+    qubit = hybrid.HybridQubit(
+        ed, stsplitting, delta1_var * delta1, delta2_var * delta2
+    )
 
     tfinal = choosing_final_time(qubit, sigma)
-    trange = np.logspace(0,5,11)#generate_trange(tfinal) #I couldn't get this function to work - leaving it as a simple logspace for now.
+    trange = np.logspace(
+        0, 5, 11
+    )  # generate_trange(tfinal) #I couldn't get this function to work - leaving it as a simple logspace for now.
     fid_time_array = np.zeros((trange.shape[0]))
     for i in range(trange.shape[0]):
         if trange[i] == 0:
@@ -118,11 +122,6 @@ def run_time_series(local_params):
     return trange, fid_time_array
 
 
-if __name__ == '__main__':
-    params = {
-        'ed_point': 1.0,
-        'sigma' : 1.0,
-        'delta1_var' : 1.0,
-        'delta2_var' : 1.0
-    }
+if __name__ == "__main__":
+    params = {"ed_point": 1.0, "sigma": 1.0, "delta1_var": 1.0, "delta2_var": 1.0}
     trange, fid_array = run_time_series(params)

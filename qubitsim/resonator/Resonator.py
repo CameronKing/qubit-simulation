@@ -2,8 +2,10 @@
 
 import numpy as np
 
+
 class Resonator(object):
     """Return a microwave frequency resonator object"""
+
     def __init__(self, omega, dim):
         self.omega = omega
         self.dim = dim

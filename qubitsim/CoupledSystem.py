@@ -3,6 +3,7 @@
 import math
 import numpy as np
 
+
 class CoupledSystem:
     def __init__(self, qubit, resonator, coupling):
         """
@@ -18,7 +19,7 @@ class CoupledSystem:
         coupling : float
           Units: GHz
           Strength of the bare coupling
-        
+
         Returns
         -------
         Coupled system object
@@ -29,38 +30,38 @@ class CoupledSystem:
         self.coupling = coupling
         self.dim = qubit.dim + resonator.dim
 
-
     def bareHamiltonian(self):
         """
         Return the bare Hamiltonian of the system
         """
-        qubitH0 = np.kron(self.qubit.hamiltonian_lab(),
-                          np.identity(self.resonator.dim))
-        resH0 = np.kron(np.identity(self.qubit.dim), 
-                        2*math.pi * self.resonator.omega * self.resonator.number_operator())
+        qubitH0 = np.kron(self.qubit.hamiltonian_lab(), np.identity(self.resonator.dim))
+        resH0 = np.kron(
+            np.identity(self.qubit.dim),
+            2 * math.pi * self.resonator.omega * self.resonator.number_operator(),
+        )
         return qubitH0 + resH0
-
 
     def couplingHamiltonian(self):
         """
         Return the coupling hamiltonian of the system.
-        Here we assume that the resonator is connected via the detuning and 
+        Here we assume that the resonator is connected via the detuning and
         we do not make the rotating wave approximation.
         Extensions will be required for other assumptions.
         """
         qubitPart = self.qubit.dipole_operator_qubit()
-        resPart = self.resonator.creation_operator() + self.resonator.annihilation_operator()
-        return 2*math.pi * self.coupling * np.kron(qubitPart, resPart)
-
+        resPart = (
+            self.resonator.creation_operator() + self.resonator.annihilation_operator()
+        )
+        return 2 * math.pi * self.coupling * np.kron(qubitPart, resPart)
 
     def couplingHamiltonianRotWave(self):
         """
         Return the coupling hamiltonian of the system.
-        Here we assume that the resonator is connected via the detuning and 
+        Here we assume that the resonator is connected via the detuning and
         The Rotating Wave Approximation is used.
 
-        This assumes low photon numbers. If any leakage states are also 
-        nearly resonant with some photon exchange, they will need to be 
+        This assumes low photon numbers. If any leakage states are also
+        nearly resonant with some photon exchange, they will need to be
         included. See Y.C. Yang 2017 Supplemental for more details.
         """
 
@@ -73,5 +74,4 @@ class CoupledSystem:
         # Op 1 and Op 2 are different energy conserving operators
         op1 = np.kron(qubitRaise, self.resonator.annihilation_operator())
         op2 = np.kron(qubitLower, self.resonator.creation_operator())
-        return 2*math.pi * self.coupling * (op1 + op2)
-        
+        return 2 * math.pi * self.coupling * (op1 + op2)

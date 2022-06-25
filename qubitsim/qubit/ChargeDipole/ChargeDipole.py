@@ -9,9 +9,10 @@ class ChargeDipole(object):
     """
     Return a charge dipole qubit object
     """
+
     def __init__(self, ed, delta):
         """
-        Create an instance of a charge dipole qubit. The accessible features 
+        Create an instance of a charge dipole qubit. The accessible features
         are ed, delta, and dim.
 
         Parameters
@@ -22,12 +23,15 @@ class ChargeDipole(object):
         delta : float
             tunnel coupling
             Units: GHz
-        
+
         Returns
         -------
         self : charge dipole qubit object
         """
-        __slots__ = 'ed', 'delta',
+        __slots__ = (
+            "ed",
+            "delta",
+        )
         self.ed = ed
         self.delta = delta
         self.dim = 2
@@ -35,7 +39,7 @@ class ChargeDipole(object):
     def hamiltonian_lab(self):
         """
         Generate the hamiltonian of the charge dipole qubit in the laboratory
-        or charge basis. 
+        or charge basis.
 
         Parameters
         ----------
@@ -47,14 +51,12 @@ class ChargeDipole(object):
             charge dipole qubit hamiltonian in the lab frame
             Units: rad/ns
         """
-        H0 = np.array([[-0.5 * self.ed, self.delta],
-                       [self.delta, 0.5*self.ed]])
+        H0 = np.array([[-0.5 * self.ed, self.delta], [self.delta, 0.5 * self.ed]])
         return 2 * math.pi * H0
-
 
     def c_detune_qubit_splitting(self, deviation):
         """
-        From the base hamiltonian, find the complex form of the qubit's 
+        From the base hamiltonian, find the complex form of the qubit's
         energy resulting from a complex deviation in the detuning.
 
         Parameters
@@ -62,22 +64,21 @@ class ChargeDipole(object):
         deviation: complex
             a complex deviation in the dipolar detuning
             Units: GHz
-        
+
         Returns
         -------
         complex
-            qubit splitting energy 
+            qubit splitting energy
             units: GHz
         """
-        Hbase = self.hamiltonian_lab() / (2*math.pi)
+        Hbase = self.hamiltonian_lab() / (2 * math.pi)
         Hdeviation = deviation * np.diag([-0.5, 0.5])
         evals = np.sort(LA.eigvals(Hbase + Hdeviation))
         return evals[1] - evals[0]
 
-
     def qubit_basis(self):
         """
-        Return the qubit eigenbasis sorted according to the convention 
+        Return the qubit eigenbasis sorted according to the convention
         that the first element of every eigenvector must be positive.
 
         Returns
@@ -88,7 +89,6 @@ class ChargeDipole(object):
         evecs = LA.eigh(self.hamiltonian_lab())[1]
         evecs = ChargeDipole.eigvector_phase_sort(evecs)
         return evecs
-
 
     def energies(self):
         """
@@ -101,7 +101,6 @@ class ChargeDipole(object):
             Units: rad/ns
         """
         return LA.eigvalsh(self.hamiltonian_lab())
-
 
     def qubit_splitting(self):
         """
@@ -116,7 +115,6 @@ class ChargeDipole(object):
         evals = self.energies()
         return evals[1] - evals[0]
 
-
     def detuning_noise_lab(self, ded):
         """
         Return the noise matrix for detuning noise in rad/ns
@@ -126,15 +124,14 @@ class ChargeDipole(object):
         ded : float
             diploar detuning
             Units: GHz
-        
+
         Returns
         -------
         (2, 2) float array
             lab frame detuning perturbation
             Units: rad/ns
         """
-        return 2*math.pi*np.diag([-0.5*ded, 0.5*ded])
-
+        return 2 * math.pi * np.diag([-0.5 * ded, 0.5 * ded])
 
     def detuning_noise_qubit(self, ded):
         """
@@ -143,7 +140,7 @@ class ChargeDipole(object):
         Parameters
         ----------
         ded : float
-            dipolar detuning 
+            dipolar detuning
             Units: GHz
         Returns
         -------
@@ -153,12 +150,11 @@ class ChargeDipole(object):
         """
         return self.qubit_basis().T @ self.detuning_noise_lab(ded) @ self.qubit_basis()
 
-
     def dipole_operator_qubit(self):
         """
-        Calculate the full dipole operator for the hybrid qubit in 
+        Calculate the full dipole operator for the hybrid qubit in
         the qubit basis
-        
+
         Returns
         -------
         (2, 2) float array
@@ -168,48 +164,46 @@ class ChargeDipole(object):
         base_operator = 0.5 * np.diag([-1, 1])
         return self.qubit_basis().T @ base_operator @ self.qubit_basis()
 
-
     def splitting_derivative(self, order):
         """
         Calculate the nth-derivative of the qubit splitting.
-        
-        The derivative methods below rely on complex step derivatives for 
+
+        The derivative methods below rely on complex step derivatives for
         numerical stability.
 
         Parameters
         ----------
         order : int
             order of the derivative (1st, 2nd, 3rd)
-        
+
         Returns
         -------
         derivative : float
             Units: GHz^(order - 1)
         """
-        
+
         if order == 1:
             step = 1e-10
-            c_num = step * (1 + 1.j) / math.sqrt(2)
+            c_num = step * (1 + 1.0j) / math.sqrt(2)
             eval1 = self.c_detune_qubit_splitting(c_num)
             eval2 = self.c_detune_qubit_splitting(-c_num)
             return np.imag(eval1 - eval2) / (step * math.sqrt(2))
         elif order == 2:
             step = 1e-8
-            c_num = step * (1 + 1.j) / math.sqrt(2)
+            c_num = step * (1 + 1.0j) / math.sqrt(2)
             eval1 = self.c_detune_qubit_splitting(c_num)
             eval2 = self.c_detune_qubit_splitting(-c_num)
             return np.imag(eval1 + eval2) / step**2
         elif order == 3:
             step = 1e-8
-            c_num = step * (1 + 1.j)
+            c_num = step * (1 + 1.0j)
             eval1 = self.c_detune_qubit_splitting(c_num)
-            eval2 = self.c_detune_qubit_splitting(0.5*c_num)
-            eval3 = self.c_detune_qubit_splitting(-0.5*c_num)
+            eval2 = self.c_detune_qubit_splitting(0.5 * c_num)
+            eval3 = self.c_detune_qubit_splitting(-0.5 * c_num)
             eval4 = self.c_detune_qubit_splitting(c_num)
-            return math.sqrt(2)*np.imag(eval1 - 2*eval2 + 2*eval3 - eval4)
+            return math.sqrt(2) * np.imag(eval1 - 2 * eval2 + 2 * eval3 - eval4)
         else:
             return None
-
 
     @staticmethod
     def eigvector_phase_sort(eig_matrix):

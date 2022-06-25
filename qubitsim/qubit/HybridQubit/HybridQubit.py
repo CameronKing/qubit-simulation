@@ -9,9 +9,10 @@ class HybridQubit(object):
     """
     Return a hybrid qubit object
     """
+
     def __init__(self, ed, stsplitting, delta1, delta2):
         """
-        Create an instance of a hybrid qubit. The accessible features 
+        Create an instance of a hybrid qubit. The accessible features
         are ed, stsplitting, delta1, delta2, and dim.
 
         Parameters
@@ -28,12 +29,17 @@ class HybridQubit(object):
         delta2 : float
             0-2 tunnel coupling
             Units: GHz
-        
+
         Returns
         -------
         self : Hybrid qubit object
         """
-        __slots__ = 'ed', 'stsplitting', 'delta1', 'delta2',
+        __slots__ = (
+            "ed",
+            "stsplitting",
+            "delta1",
+            "delta2",
+        )
         self.ed = ed
         self.stsplitting = stsplitting
         self.delta1 = delta1
@@ -42,8 +48,8 @@ class HybridQubit(object):
 
     def hamiltonian_lab(self):
         """
-        Generate the hamiltonian of the hybrid qubit in the laboratory or 
-        charge basis. 
+        Generate the hamiltonian of the hybrid qubit in the laboratory or
+        charge basis.
 
         Parameters
         ----------
@@ -55,15 +61,18 @@ class HybridQubit(object):
             Hybrid qubit hamiltonian in the lab frame
             Units: rad/ns
         """
-        H0 = np.array([[-0.5 * self.ed, 0, self.delta1],
-                       [0, -0.5*self.ed + self.stsplitting, -self.delta2],
-                       [self.delta1, -self.delta2, 0.5*self.ed]])
+        H0 = np.array(
+            [
+                [-0.5 * self.ed, 0, self.delta1],
+                [0, -0.5 * self.ed + self.stsplitting, -self.delta2],
+                [self.delta1, -self.delta2, 0.5 * self.ed],
+            ]
+        )
         return 2 * math.pi * H0
-
 
     def c_detune_qubit_splitting(self, deviation):
         """
-        From the base hamiltonian, find the complex form of the qubit's 
+        From the base hamiltonian, find the complex form of the qubit's
         energy resulting from a complex deviation in the detuning.
 
         Parameters
@@ -71,22 +80,21 @@ class HybridQubit(object):
         deviation: complex
             a complex deviation in the dipolar detuning
             Units: GHz
-        
+
         Returns
         -------
         complex
-            qubit splitting energy 
+            qubit splitting energy
             units: GHz
         """
-        Hbase = self.hamiltonian_lab() / (2*math.pi)
+        Hbase = self.hamiltonian_lab() / (2 * math.pi)
         Hdeviation = deviation * np.diag([-0.5, -0.5, 0.5])
         evals = np.sort(LA.eigvals(Hbase + Hdeviation))
         return evals[1] - evals[0]
 
-
     def qubit_basis(self):
         """
-        Return the qubit eigenbasis sorted according to the convention 
+        Return the qubit eigenbasis sorted according to the convention
         that the first element of every eigenvector must be positive.
 
         Returns
@@ -103,13 +111,13 @@ class HybridQubit(object):
         Return the qubit energy as a function of detuning using the
         given values of stsplitting, delta1, delta2. Primarily a convenience
         function for noise derivative calculations.
-        
+
         Parameters
         ----------
         detuning : float ndarray
             dipolar detuning array
             Units: GHz
-        
+
         Returns
         -------
         qubit energy : float ndarray
@@ -118,13 +126,16 @@ class HybridQubit(object):
         """
         return_array = np.zeros(len(detuning))
         for i in range(len(detuning)):
-            H0 = np.array([[-0.5*detuning[i], 0, self.delta1],
-                           [0, -0.5*detuning[i] + self.stsplitting, -self.delta2],
-                           [self.delta1, -self.delta2, 0.5*detuning[i]]])
-            evals = LA.eigvalsh(2*math.pi*H0)
+            H0 = np.array(
+                [
+                    [-0.5 * detuning[i], 0, self.delta1],
+                    [0, -0.5 * detuning[i] + self.stsplitting, -self.delta2],
+                    [self.delta1, -self.delta2, 0.5 * detuning[i]],
+                ]
+            )
+            evals = LA.eigvalsh(2 * math.pi * H0)
             return_array[i] = evals[1] - evals[0]
         return return_array
-
 
     def energies(self):
         """
@@ -137,7 +148,6 @@ class HybridQubit(object):
             Units: rad/ns
         """
         return LA.eigvalsh(self.hamiltonian_lab())
-
 
     def qubit_splitting(self):
         """
@@ -152,7 +162,6 @@ class HybridQubit(object):
         evals = self.energies()
         return evals[1] - evals[0]
 
-
     def detuning_noise_lab(self, ded):
         """
         Return the noise matrix for detuning noise in rad/ns
@@ -162,15 +171,14 @@ class HybridQubit(object):
         ded : float
             diploar detuning
             Units: GHz
-        
+
         Returns
         -------
         (3, 3) float array
             lab frame detuning perturbation
             Units: rad/ns
         """
-        return 2*math.pi*np.diag([-0.5*ded, -0.5*ded, 0.5*ded])
-
+        return 2 * math.pi * np.diag([-0.5 * ded, -0.5 * ded, 0.5 * ded])
 
     def detuning_noise_qubit(self, ded):
         """
@@ -179,7 +187,7 @@ class HybridQubit(object):
         Parameters
         ----------
         ded : float
-            dipolar detuning 
+            dipolar detuning
             Units: GHz
         Returns
         -------
@@ -189,12 +197,11 @@ class HybridQubit(object):
         """
         return self.qubit_basis().T @ self.detuning_noise_lab(ded) @ self.qubit_basis()
 
-
     def dipole_operator_qubit(self):
         """
-        Calculate the full dipole operator for the hybrid qubit in 
+        Calculate the full dipole operator for the hybrid qubit in
         the qubit basis
-        
+
         Returns
         -------
         (3, 3) float array
@@ -204,48 +211,46 @@ class HybridQubit(object):
         base_operator = 0.5 * np.diag([-1, -1, 1])
         return self.qubit_basis().T @ base_operator @ self.qubit_basis()
 
-
     def splitting_derivative(self, order):
         """
         Calculate the nth-derivative of the qubit splitting.
-        
-        The derivative methods below rely on complex step derivatives for 
+
+        The derivative methods below rely on complex step derivatives for
         numerical stability.
 
         Parameters
         ----------
         order : int
             order of the derivative (1st, 2nd, 3rd)
-        
+
         Returns
         -------
         derivative : float
             Units: GHz^(order - 1)
         """
-        
+
         if order == 1:
             step = 1e-10
-            c_num = step * (1 + 1.j) / math.sqrt(2)
+            c_num = step * (1 + 1.0j) / math.sqrt(2)
             eval1 = self.c_detune_qubit_splitting(c_num)
             eval2 = self.c_detune_qubit_splitting(-c_num)
             return np.imag(eval1 - eval2) / (step * math.sqrt(2))
         elif order == 2:
             step = 1e-8
-            c_num = step * (1 + 1.j) / math.sqrt(2)
+            c_num = step * (1 + 1.0j) / math.sqrt(2)
             eval1 = self.c_detune_qubit_splitting(c_num)
             eval2 = self.c_detune_qubit_splitting(-c_num)
             return np.imag(eval1 + eval2) / step**2
         elif order == 3:
             step = 1e-8
-            c_num = step * (1 + 1.j)
+            c_num = step * (1 + 1.0j)
             eval1 = self.c_detune_qubit_splitting(c_num)
-            eval2 = self.c_detune_qubit_splitting(0.5*c_num)
-            eval3 = self.c_detune_qubit_splitting(-0.5*c_num)
+            eval2 = self.c_detune_qubit_splitting(0.5 * c_num)
+            eval3 = self.c_detune_qubit_splitting(-0.5 * c_num)
             eval4 = self.c_detune_qubit_splitting(c_num)
-            return math.sqrt(2)*np.imag(eval1 - 2*eval2 + 2*eval3 - eval4)
+            return math.sqrt(2) * np.imag(eval1 - 2 * eval2 + 2 * eval3 - eval4)
         else:
             return None
-
 
     @staticmethod
     def eigvector_phase_sort(eig_matrix):
@@ -255,19 +260,17 @@ class HybridQubit(object):
         return eig_matrix
 
 
-
 class SOSSHybrid(HybridQubit):
     """
     Return a hybrid qubit object that is at a second order sweet spot
     resonant at some given frequency
     """
 
-
     def __init__(self, ed_ratio, matchfreq, guess=None):
         """
         Create a SOSS hybrid qubit object. It inherits all hybrid qubit
         class methods and has the additional specifications of a particular
-        operating point in detuning space and the frequency must match the 
+        operating point in detuning space and the frequency must match the
         given value.
 
         Parameters
@@ -283,22 +286,26 @@ class SOSSHybrid(HybridQubit):
             Order:
                 (delta1, delta2, stsplitting)
         """
-        __slots__ = 'ed_ratio', 'matchfreq',
+        __slots__ = (
+            "ed_ratio",
+            "matchfreq",
+        )
         self.ed_ratio = ed_ratio
         self.matchfreq = matchfreq
 
-        if guess==None:
+        if guess == None:
             guess = [0.7 * matchfreq, 0.7 * matchfreq, matchfreq]
-        
-        delta1, delta2, stsplitting = SOSSHybrid.__find_sweet_spot(guess, ed_ratio, matchfreq)
+
+        delta1, delta2, stsplitting = SOSSHybrid.__find_sweet_spot(
+            guess, ed_ratio, matchfreq
+        )
         ed = ed_ratio * stsplitting
         super().__init__(ed, stsplitting, delta1, delta2)
-
 
     @staticmethod
     def __conditions(vector_x, operating_ratio, res_freq):
         """
-        This function calculates the required values that 
+        This function calculates the required values that
         need to be zero for the SOSS qubit
 
         Parameters
@@ -312,7 +319,7 @@ class SOSSHybrid(HybridQubit):
         res_freq: float
             qubit frequency to match
             Units: GHz
-        
+
         Returns
         -------
         (3) float array
@@ -325,22 +332,20 @@ class SOSSHybrid(HybridQubit):
                 Units: GHz^(-1)
         """
         delta1, delta2, stsplitting = vector_x
-        ref_qubit = HybridQubit(operating_ratio * stsplitting,
-                                stsplitting,
-                                delta1,
-                                delta2)
-        resonance = res_freq - ref_qubit.qubit_splitting() / (2*math.pi)
+        ref_qubit = HybridQubit(
+            operating_ratio * stsplitting, stsplitting, delta1, delta2
+        )
+        resonance = res_freq - ref_qubit.qubit_splitting() / (2 * math.pi)
         D1 = ref_qubit.splitting_derivative(1)
         D2 = ref_qubit.splitting_derivative(2)
         return [resonance, D1, D2]
 
-
     @staticmethod
     def __find_sweet_spot(guess, operating_ratio, res_freq):
         """
-        This method uses the hybrid method and 
-        scipy.optimize.root to find the values of 
-        delta1, delta2, and stsplitting that result in a 
+        This method uses the hybrid method and
+        scipy.optimize.root to find the values of
+        delta1, delta2, and stsplitting that result in a
         second order sweet spot (SOSS).
 
         Parameters
@@ -361,15 +366,18 @@ class SOSSHybrid(HybridQubit):
         Returns
         -------
         tunings: (3) float
-            values found by scipy.optimize.root to correspond to a SOSS, with 
+            values found by scipy.optimize.root to correspond to a SOSS, with
             form [delta1, delta2, stsplitting]
             Units: GHz
         """
         from scipy.optimize import root
-        tunings = root(SOSSHybrid.__conditions,
-                   guess,
-                   args=(operating_ratio, res_freq),
-                   method='hybr', tol=1e-8,
-                   options = {'eps': 1e-6,
-                              'factor': 10}).x
+
+        tunings = root(
+            SOSSHybrid.__conditions,
+            guess,
+            args=(operating_ratio, res_freq),
+            method="hybr",
+            tol=1e-8,
+            options={"eps": 1e-6, "factor": 10},
+        ).x
         return tunings

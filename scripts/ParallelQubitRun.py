@@ -5,20 +5,30 @@ import numpy as np
 
 import OperatingPointSelection as trun
 
-def SaveFiles(index_array, ed_point, delta1_point, delta2_point,
-              trange, sigma_array, mass_cj_array):
-    root_folder = os.path.join('Data', 'run1')
-    file_name = os.path.join(root_folder,
-                             '{:02d}{:02d}{:02d}'.format(
-                                 index_array[0], index_array[1], index_array[2]))
-    np.savez(file_name,
-             op_point = ed_point,
-             delta1_var = delta1_point,
-             delta2_var = delta2_point,
-             trange = trange,
-             sigma_array = sigma_array,
-             mass_chi_array = mass_chi_array
-             )
+
+def SaveFiles(
+    index_array,
+    ed_point,
+    delta1_point,
+    delta2_point,
+    trange,
+    sigma_array,
+    mass_cj_array,
+):
+    root_folder = os.path.join("Data", "run1")
+    file_name = os.path.join(
+        root_folder,
+        "{:02d}{:02d}{:02d}".format(index_array[0], index_array[1], index_array[2]),
+    )
+    np.savez(
+        file_name,
+        op_point=ed_point,
+        delta1_var=delta1_point,
+        delta2_var=delta2_point,
+        trange=trange,
+        sigma_array=sigma_array,
+        mass_chi_array=mass_chi_array,
+    )
 
 
 comm = MPI.COMM_WORLD
@@ -37,15 +47,24 @@ if rank == 0:
     data2 = np.array(range(11), dtype=int)
     data = np.ravel(np.array(np.meshgrid(data0, data1, data2)).T)
 
-recvbuf = np.empty((3*11*11), dtype=int)
+recvbuf = np.empty((3 * 11 * 11), dtype=int)
 comm.Scatter(data, recvbuf, root=0)
 
-operating_points = recvbuf.reshape((11*11, 3))
-for i in range(11*11):
+operating_points = recvbuf.reshape((11 * 11, 3))
+for i in range(11 * 11):
     index_array = operating_points[i, :]
     ed_point = operating_point_array[index_array[0]]
     delta1_point = delta1_array[index_array[1]]
     delta2_point = delta2_array[index_array[2]]
-    trange, sigma_array, mass_chi_array = trun.time_evolution_point(ed_point, delta1_point, delta2_point)
-    SaveFiles(index_array, ed_point, delta1_point, delta2_point, 
-              trange, sigma_array, mass_chi_array)
+    trange, sigma_array, mass_chi_array = trun.time_evolution_point(
+        ed_point, delta1_point, delta2_point
+    )
+    SaveFiles(
+        index_array,
+        ed_point,
+        delta1_point,
+        delta2_point,
+        trange,
+        sigma_array,
+        mass_chi_array,
+    )

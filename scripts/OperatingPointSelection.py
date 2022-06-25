@@ -1,4 +1,4 @@
-# Script to iterate over possible hybrid qubit operating locations 
+# Script to iterate over possible hybrid qubit operating locations
 # and determine the required tolerances for the tunnel couplings
 
 import math
@@ -10,32 +10,34 @@ from qubitsim import CJFidelities as cj
 
 
 def choosing_final_time(qubit, sigma):
-    """ Function to make a guess at the final time required 
+    """Function to make a guess at the final time required
     for estimating decoherence"""
     h = 1e-3
-    coeff_array1 = np.array([1/12, -2/3, 0, 2/3, -1/12])
-    coeff_array2 = np.array([-1/12, 4/3, -5/2, 4/3, -1/12])
-    coeff_array3 = np.array([-1/2, 1, 0, -1, 1/2])
+    coeff_array1 = np.array([1 / 12, -2 / 3, 0, 2 / 3, -1 / 12])
+    coeff_array2 = np.array([-1 / 12, 4 / 3, -5 / 2, 4 / 3, -1 / 12])
+    coeff_array3 = np.array([-1 / 2, 1, 0, -1, 1 / 2])
 
     ed = qubit.ed
     stsplitting = qubit.stsplitting
     delta1 = qubit.delta1
     delta2 = qubit.delta2
 
-    qsm2 = hybrid.HybridQubit(ed - 2*h, stsplitting, delta1, delta2).qubit_splitting()
+    qsm2 = hybrid.HybridQubit(ed - 2 * h, stsplitting, delta1, delta2).qubit_splitting()
     qsm1 = hybrid.HybridQubit(ed - h, stsplitting, delta1, delta2).qubit_splitting()
     qsp1 = hybrid.HybridQubit(ed + h, stsplitting, delta1, delta2).qubit_splitting()
-    qsp2 = hybrid.HybridQubit(ed + 2*h, stsplitting, delta1, delta2).qubit_splitting()
+    qsp2 = hybrid.HybridQubit(ed + 2 * h, stsplitting, delta1, delta2).qubit_splitting()
 
-    sample_array = np.array([qsm2, qsm1, qubit.qubit_splitting(), qsp1, qsp2]) / (2*math.pi)
+    sample_array = np.array([qsm2, qsm1, qubit.qubit_splitting(), qsp1, qsp2]) / (
+        2 * math.pi
+    )
 
     deriv1 = np.abs(np.dot(sample_array, coeff_array1))
     deriv2 = np.abs(np.dot(sample_array, coeff_array2))
     deriv3 = np.abs(np.dot(sample_array, coeff_array3))
 
-    G21 = 2*(deriv1*sigma)
-    G22 = 2*(deriv2 * sigma**2)
-    G23 = 2*(deriv3 * sigma**3)
+    G21 = 2 * (deriv1 * sigma)
+    G22 = 2 * (deriv2 * sigma**2)
+    G23 = 2 * (deriv3 * sigma**3)
     return np.reciprocal(np.sum(np.array([G21, G22, G23])))
 
 
@@ -49,13 +51,13 @@ def noise_doubling(original):
 
 
 def two_sigma_doubling(original, sigma):
-    middle = np.nonzero(np.fabs(original) <= 2*sigma)[0]
+    middle = np.nonzero(np.fabs(original) <= 2 * sigma)[0]
     new_size = len(original) + len(middle) - 1
     start = range(0, middle[0])
-    finish = range(middle[-1]+1, len(original))
+    finish = range(middle[-1] + 1, len(original))
     new_start = start
-    new_middle = range(middle[0], middle[0]+2*len(middle)-1)
-    new_finish = range(new_middle[-1]+1, new_size)
+    new_middle = range(middle[0], middle[0] + 2 * len(middle) - 1)
+    new_finish = range(new_middle[-1] + 1, new_size)
     new_samples = noise_doubling(original[middle])[1]
 
     new_array = np.zeros((new_size))
@@ -66,18 +68,18 @@ def two_sigma_doubling(original, sigma):
 
 
 def wing_doubling(original, sigma):
-    middle = np.nonzero(np.fabs(original) <= 2*sigma)[0]
+    middle = np.nonzero(np.fabs(original) <= 2 * sigma)[0]
     start = range(0, middle[0])
-    finish = range(middle[-1]+1, len(original))
+    finish = range(middle[-1] + 1, len(original))
     new_size = len(original) + len(start) + len(finish) - 2
 
     start_double = noise_doubling(original[start])[1]
     finish_double = noise_doubling(original[finish])[1]
 
     new_array = np.zeros((new_size))
-    new_array[0:len(start_double)] += start_double
-    new_array[len(start_double):len(start_double)+len(middle)] += original[middle]
-    new_array[len(start_double)+len(middle):] += finish_double
+    new_array[0 : len(start_double)] += start_double
+    new_array[len(start_double) : len(start_double) + len(middle)] += original[middle]
+    new_array[len(start_double) + len(middle) :] += finish_double
     return new_array
 
 
@@ -92,6 +94,7 @@ def noise_sample(qubit, tfinal, ded):
     else:
         return ChoiSimulation.chi_final_RF(tfinal)
 
+
 def noise_iteration(qubit, tfinal, noise_samples):
     cj_array = np.zeros((9, 9, len(noise_samples)), dtype=complex)
     for i in range(len(noise_samples)):
@@ -102,6 +105,7 @@ def noise_iteration(qubit, tfinal, noise_samples):
 
 def noise_averaging(x, noise_weights, cj_array):
     from scipy.integrate import simps
+
     norm = simps(noise_weights, x)
     matrix_int = simps(np.multiply(cj_array, noise_weights), x)
     return matrix_int / norm
@@ -113,31 +117,35 @@ def process_noise(qubit, tstep, noise_samples, sigma_array):
     and the standard deviations of the noise.
 
     Returns two arrays:
-      average_chi_array: (len(sigma_array), qubit_dim, qubit_dim) sized array 
+      average_chi_array: (len(sigma_array), qubit_dim, qubit_dim) sized array
                          containing the chi-matrix at this time for each sigma
       raw_chi_array: (len(noise_samples), qubit_dim, qubit_dim) sized array
-                     raw samples used for the averaging, required to 
+                     raw samples used for the averaging, required to
                      save time in recomputation
     """
     from scipy.stats import norm
+
     noise_weights = np.zeros((len(sigma_array), len(noise_samples)))
-    average_chi_array = np.zeros((len(sigma_array), 9,9), dtype=complex)
+    average_chi_array = np.zeros((len(sigma_array), 9, 9), dtype=complex)
     raw_chi_array = noise_iteration(qubit, tstep, noise_samples)
     for i in range(len(sigma_array)):
         noise_weights[i, :] += norm.pdf(noise_samples, loc=0.0, scale=sigma_array[i])
-        average_chi_array[i, :, :] += noise_averaging(noise_samples, noise_weights[i, :], raw_chi_array)
+        average_chi_array[i, :, :] += noise_averaging(
+            noise_samples, noise_weights[i, :], raw_chi_array
+        )
     return average_chi_array, raw_chi_array
-    
 
 
 def multi_sigma_noise_sampling(qubit, tstep, sigma_array, num_samples):
-    """Ensure convergence of averaging a computed chi-matrix array with 
+    """Ensure convergence of averaging a computed chi-matrix array with
     respect to gaussians with standard deviations given by sigma_array.
     If convergence hasn't been reached, more samples will be taken."""
 
-    noise_samples0 = np.linspace(-5*sigma_array[-1], 5*sigma_array[-1], num_samples)
-    average_chi_array0, raw_chi_array0 = process_noise(qubit, tstep, noise_samples0, sigma_array)
-    
+    noise_samples0 = np.linspace(-5 * sigma_array[-1], 5 * sigma_array[-1], num_samples)
+    average_chi_array0, raw_chi_array0 = process_noise(
+        qubit, tstep, noise_samples0, sigma_array
+    )
+
     converge_value = 1.0
     num_runs = 1
     # Used to progressively refine the sampling space
@@ -148,16 +156,26 @@ def multi_sigma_noise_sampling(qubit, tstep, sigma_array, num_samples):
             noise_samples1 = wing_doubling(noise_samples0, sigma_array[sig_index])
         else:
             noise_samples1 = two_sigma_doubling(noise_samples0, sigma_array[sig_index])
-        average_chi_array1, raw_chi_array1 = process_noise(qubit, tstep, noise_samples1, sigma_array)
+        average_chi_array1, raw_chi_array1 = process_noise(
+            qubit, tstep, noise_samples1, sigma_array
+        )
 
         converge_array = np.zeros((len(sigma_array)))
 
         diff_matrix = average_chi_array1 - average_chi_array0
-        converge_array = np.real(np.sqrt(
-            np.einsum('ijj',
-            np.einsum('ijk,ikm->ijm', diff_matrix, 
-                np.einsum('ikj', diff_matrix.conj())))))
-  
+        converge_array = np.real(
+            np.sqrt(
+                np.einsum(
+                    "ijj",
+                    np.einsum(
+                        "ijk,ikm->ijm",
+                        diff_matrix,
+                        np.einsum("ikj", diff_matrix.conj()),
+                    ),
+                )
+            )
+        )
+
         # Ensure that all of the individual chi-matrices have converged
         converge_value = np.max(converge_array)
         for i, norm in reversed(list(enumerate(converge_array))):
@@ -178,9 +196,9 @@ def time_sweep(qubit):
     """
     Given a qubit operating point, represented by the input hybrid qubit object,
     return the process matrix evolution as a function of time.
-    
+
     Inputs: qubit
-    
+
     Ouputs: trange, array of simulated times
             chi_array, array of process matrices at the simulated times
     """
@@ -196,14 +214,16 @@ def time_sweep(qubit):
     for i in range(len(tarray)):
         tstep = tarray[i]
         print(tstep, tfinal)
-        num_noise_samples, sigma_chi_array = multi_sigma_noise_sampling(qubit, tstep, sigma_array, num_noise_samples)
+        num_noise_samples, sigma_chi_array = multi_sigma_noise_sampling(
+            qubit, tstep, sigma_array, num_noise_samples
+        )
         mass_chi_array[i, :, :, :] = sigma_chi_array
 
     return tarray, sigma_array, mass_chi_array
 
 
 def time_evolution_point(operating_point, delta1_point, delta2_point):
-    """At the given operating point, return the time array and chi_matrix 
+    """At the given operating point, return the time array and chi_matrix
     array for each of the noise values considered"""
     match_freq = 10.0
     qubit_base = hybrid.SOSSHybrid(operating_point, match_freq)
@@ -211,9 +231,8 @@ def time_evolution_point(operating_point, delta1_point, delta2_point):
     delta2_ref = qubit_base.delta2
     stsplitting_ref = qubit_base.stsplitting
     ed_ref = qubit_base.ed
-    qubit = hybrid.HybridQubit(ed_ref,
-                               stsplitting_ref,
-                               delta1_point * delta1_ref,
-                               delta2_point * delta2_ref)
+    qubit = hybrid.HybridQubit(
+        ed_ref, stsplitting_ref, delta1_point * delta1_ref, delta2_point * delta2_ref
+    )
     trange, sigma_array, mass_chi_array = time_sweep(qubit)
     return trange, sigma_array, mass_chi_array

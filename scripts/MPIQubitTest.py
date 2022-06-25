@@ -15,6 +15,6 @@ if rank == 0:
     data2 = np.linspace(0.95, 1.05, 11, dtype=float)
     data = np.ravel(np.array(np.meshgrid(data0, data1, data2)).T)
 
-recvbuf = np.empty((3*5*11), dtype=float)
+recvbuf = np.empty((3 * 5 * 11), dtype=float)
 comm.Scatter(data, recvbuf, root=0)
 print(rank, recvbuf)

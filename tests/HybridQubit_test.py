@@ -4,13 +4,11 @@ import math
 import pytest
 import numpy as np
 
-from context import qubitsim
 import qubitsim.qubit.HybridQubit as hybrid
 
+
 def test_qubit_initialization():
-    """
-    Tests for correct initialization of the qubit
-    """
+    """Tests for correct initialization of the qubit."""
     qubit = hybrid.HybridQubit(10.0, 10.0, 7.0, 7.0)
     assert qubit.ed == 10.0
     assert qubit.stsplitting == 10.0
@@ -19,9 +17,7 @@ def test_qubit_initialization():
 
 
 def test_qubit_hamiltonian_lab():
-    """
-    Tests correct calculation of the Hamiltonian in the lab frame
-    """
+    """Tests correct calculation of the Hamiltonian in the lab frame."""
     qubit = hybrid.HybridQubit(20.0, 10.0, 7.0, 4.0)
     Hlab = qubit.hamiltonian_lab() / (2 * math.pi)
     assert (-2 * Hlab[0, 0]) == (qubit.ed)
@@ -31,9 +27,7 @@ def test_qubit_hamiltonian_lab():
 
 
 def test_eigenbasis_normalization():
-    """
-    Tests if the eigenbasis is normalized
-    """
+    """Tests if the eigenbasis is normalized."""
     qubit = hybrid.HybridQubit(30.0, 10.0, 7.0, 4.0)
     for vector in qubit.qubit_basis().T:
         assert np.linalg.norm(vector) - 1 <= 1e-15

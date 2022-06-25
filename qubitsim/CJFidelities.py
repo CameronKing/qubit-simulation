@@ -6,13 +6,15 @@ import math
 import numpy as np
 import scipy.linalg as LA
 
-class CJ (object):
+
+class CJ(object):
     """
     Return a Choi-Jamilkowski matrix after a given amount
     of state evolution. This is equivalent to the chi-matrix
     for the evolution
     """
-    def __init__(self, indices, hamiltonian, noise_hamiltonian, noise_type = None):
+
+    def __init__(self, indices, hamiltonian, noise_hamiltonian, noise_type=None):
         """
         Initialize a Choi-Jamilkowski instance with the subspace
         of interest given by indices, and the kernel of the unitary
@@ -27,11 +29,11 @@ class CJ (object):
         chi0[np.ix_(converted_indices, converted_indices)] = norm
         self.chi0 = chi0
         self.noise_type = noise_type
-        if noise_type == 'quasistatic':
+        if noise_type == "quasistatic":
             shifted_hamiltonian = hamiltonian + noise_hamiltonian
             shifted_energies = LA.eigh(shifted_hamiltonian)[0]
             shifted_hamiltonian = np.diag(shifted_energies)
-            noise_hamiltonian = np.zeros((dim,dim))
+            noise_hamiltonian = np.zeros((dim, dim))
             self.kernel = np.kron(np.identity(dim), shifted_hamiltonian)
         else:
             self.kernel = np.kron(np.identity(dim), hamiltonian)
@@ -45,9 +47,9 @@ class CJ (object):
         if tfinal == 0.0:
             return self.chi0
         else:
-            unitary = LA.expm(-1j*tfinal*(self.kernel + self.noise))
+            unitary = LA.expm(-1j * tfinal * (self.kernel + self.noise))
             return unitary @ self.chi0 @ unitary.conj().T
-            
+
     def chi_final_RF(self, tfinal):
         """
         Find the chi_matrix in the rotating frame defined by the deliberate
@@ -57,13 +59,18 @@ class CJ (object):
             return self.chi0
         else:
             unitary_rotation = LA.expm(1j * tfinal * self.rot_basis)
-            if self.noise_type == 'quasistatic':
-                return unitary_rotation @ self.chi_final(tfinal) @ unitary_rotation.conj().T
+            if self.noise_type == "quasistatic":
+                return (
+                    unitary_rotation
+                    @ self.chi_final(tfinal)
+                    @ unitary_rotation.conj().T
+                )
             else:
-                mod_interaction = unitary_rotation @ self.noise @ unitary_rotation.conj().T
+                mod_interaction = (
+                    unitary_rotation @ self.noise @ unitary_rotation.conj().T
+                )
                 unitary_operation = LA.expm(-1j * tfinal * mod_interaction)
                 return unitary_operation @ self.chi0 @ unitary_operation.conj().T
-
 
     def fidelity(self, tfinal):
         """
@@ -75,7 +82,7 @@ class CJ (object):
         tfinal : float
             Time of the simulation
             Units: ns
-        
+
         Returns
         -------
         float
@@ -97,7 +104,7 @@ def fidelity(chi_ideal, chi_actual):
 
     chi_actual : (n, n) complex array
         Actual process matrix
-    
+
     Returns
     -------
     float
